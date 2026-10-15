@@ -185,3 +185,15 @@ export const createAffiliateAdjustment = async (
     );
   }
 };
+
+export const resolveReferralCode = async (code) => {
+  try {
+    const response = await api.get("/affiliates/resolve", {
+      params: { code },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error resolving referral code:", error);
+    throw new Error(getErrorMessage(error, "Failed to resolve referral code."));
+  }
+};

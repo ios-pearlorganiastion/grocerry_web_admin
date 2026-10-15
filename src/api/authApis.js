@@ -55,6 +55,69 @@ export const staffLogin = async (credentials) => {
   return result;
 };
 
+export const staffRegister = async (registrationData, bootstrapSecret = "") => {
+  try {
+    const headers = {};
+    const secret =
+      bootstrapSecret ||
+      localStorage.getItem("staffBootstrapSecret") ||
+      localStorage.getItem("bootstrapSecret");
+
+    if (secret) {
+      headers["x-staff-bootstrap-secret"] = secret;
+    }
+
+    const response = await api.post("/auth/staff/register", registrationData, {
+      headers,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error registering staff:", error);
+    const message =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      "Failed to register staff account.";
+    throw new Error(message);
+  }
+};
+
+export const getCurrentUser = async () => {
+  try {
+    const response = await api.get("/auth/me");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching current user:", error);
+    const message =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      "Failed to load authenticated user details.";
+    throw new Error(message);
+  }
+};
+
+export const getMe = getCurrentUser;
+
+export const checkHealth = async () => {
+  try {
+    const response = await api.get("/health");
+    return response.data;
+  } catch (error) {
+    console.error("Error checking health status:", error);
+    const message =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      "Service health check failed.";
+    throw new Error(message);
+  }
+};
+
 export default {
   staffLogin,
+  staffRegister,
+  getCurrentUser,
+  getMe,
+  checkHealth,
 };

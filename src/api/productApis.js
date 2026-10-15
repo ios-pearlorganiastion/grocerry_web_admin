@@ -142,3 +142,55 @@ export const getProductById = async (productId) => {
     throw new Error(getErrorMessage(error, "Failed to load product."));
   }
 };
+
+export const getProductByBarcode = async (sku) => {
+  try {
+    const response = await api.get(`/products/barcode/${encodeURIComponent(sku)}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching product by barcode / SKU:", error);
+    throw new Error(getErrorMessage(error, "Failed to find product by SKU / barcode."));
+  }
+};
+
+export const getInventoryTransactions = async (variantId) => {
+  try {
+    const response = await api.get(`/inventory/${variantId}/transactions`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching inventory transactions:", error);
+    throw new Error(getErrorMessage(error, "Failed to load inventory transactions."));
+  }
+};
+
+export const uploadProductImage = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await api.post("/uploads/product-image", formData);
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading product image:", error);
+    throw new Error(getErrorMessage(error, "Failed to upload product image."));
+  }
+};
+
+export const uploadProductImages = async (productId, files = []) => {
+  try {
+    const formData = new FormData();
+    if (productId) formData.append("productId", productId);
+
+    if (Array.isArray(files)) {
+      files.forEach((file) => formData.append("files", file));
+    } else if (files) {
+      formData.append("files", files);
+    }
+
+    const response = await api.post("/uploads/product-images", formData);
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading product images:", error);
+    throw new Error(getErrorMessage(error, "Failed to upload product images."));
+  }
+};

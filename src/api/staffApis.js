@@ -62,3 +62,28 @@ export const deleteStaff = async (staffId) => {
     throw new Error(getErrorMessage(error, "Failed to delete staff."));
   }
 };
+
+export const registerStaffBootstrap = async (staffData, bootstrapSecret = "") => {
+  try {
+    const headers = {};
+    const secret =
+      bootstrapSecret ||
+      localStorage.getItem("staffBootstrapSecret") ||
+      localStorage.getItem("bootstrapSecret");
+
+    if (secret) {
+      headers["x-staff-bootstrap-secret"] = secret;
+    }
+
+    const response = await api.post("/auth/staff/register", staffData, {
+      headers,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error bootstrap registering staff:", error);
+    throw new Error(
+      getErrorMessage(error, "Failed to bootstrap register staff.")
+    );
+  }
+};
+

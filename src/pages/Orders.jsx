@@ -17,7 +17,11 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-import { getOrders } from "../api/order.api";
+import {
+  getOrders,
+  updateOrderStatus,
+  confirmOrderPayment,
+} from "../api/order.api";
 
 const STATUSES = [
   ["", "All"],
@@ -181,7 +185,16 @@ function OrderDetailsModal({
   order,
   onClose,
   onAction,
+  onStatusUpdate,
+  onPaymentConfirm,
 }) {
+  const [selectedStatus, setSelectedStatus] = useState(
+    order?.status || "CONFIRMED"
+  );
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
+  const [actionError, setActionError] = useState("");
+
   const items = Array.isArray(order?.items)
     ? order.items
     : [];
@@ -501,6 +514,82 @@ function OrderDetailsModal({
               </p>
             </div>
           )}
+
+          {/* Admin Staff Action Controls */}
+          <div className="mt-2.5 rounded-xl border border-[#dceacb] bg-[#f7f8f2] p-3 sm:mt-3">
+            <p className="text-[9px] font-bold uppercase tracking-wider text-[#315d32]">
+              Staff Management Actions
+            </p>
+
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="h-10 flex-1 rounded-xl border border-[#dceacb] bg-white px-3 text-xs font-semibold text-[#202a20] outline-none transition focus:border-[#315d32]"
+              >
+                {STATUSES.filter(([val]) => val).map(([val, label]) => (
+                  <option key={val} value={val}>
+                    {label} ({val})
+                  </option>
+                ))}
+              </select>
+
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                disabled={isUpdatingStatus || selectedStatus === order.status}
+                onClick={async () => {
+                  try {
+                    setIsUpdatingStatus(true);
+                    setActionError("");
+                    await onStatusUpdate(order.id, selectedStatus);
+                  } catch (err) {
+                    setActionError(
+                      err?.message || "Failed to update order status."
+                    );
+                  } finally {
+                    setIsUpdatingStatus(false);
+                  }
+                }}
+                className="h-10 rounded-xl bg-[#315d32] px-4 text-xs font-bold text-white shadow-sm transition hover:bg-[#274d29] disabled:opacity-50"
+              >
+                {isUpdatingStatus ? "Updating..." : "Update Status"}
+              </motion.button>
+            </div>
+
+            {order.status === "PENDING_PAYMENT" && (
+              <div className="mt-2.5 flex items-center justify-between border-t border-[#dceacb] pt-2.5">
+                <span className="text-xs font-medium text-[#667065]">
+                  Payment Status: <span className="font-bold text-[#a07824]">Pending</span>
+                </span>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  disabled={isConfirmingPayment}
+                  onClick={async () => {
+                    try {
+                      setIsConfirmingPayment(true);
+                      setActionError("");
+                      await onPaymentConfirm(order.id);
+                    } catch (err) {
+                      setActionError(
+                        err?.message || "Failed to confirm payment."
+                      );
+                    } finally {
+                      setIsConfirmingPayment(false);
+                    }
+                  }}
+                  className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {isConfirmingPayment ? "Confirming..." : "Confirm Payment"}
+                </motion.button>
+              </div>
+            )}
+
+            {actionError && (
+              <p className="mt-2 text-xs font-medium text-rose-600">
+                {actionError}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="shrink-0 border-t border-[#edf1e9] bg-white p-2.5 sm:px-5 sm:py-3.5">
@@ -512,23 +601,6 @@ function OrderDetailsModal({
             >
               Close
             </motion.button>
-
-            {![
-              "COMPLETED",
-              "CANCELLED",
-            ].includes(order.status) && (
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={() =>
-                  onAction(
-                    "Order updated successfully"
-                  )
-                }
-                className="h-10 w-full rounded-xl bg-[#315d32] px-5 text-xs font-bold text-white shadow-[0_8px_20px_rgba(49,93,50,0.2)] transition hover:bg-[#274d29] sm:w-auto"
-              >
-                Update Order
-              </motion.button>
-            )}
           </div>
         </div>
       </motion.div>
@@ -647,6 +719,20 @@ export default function Orders() {
 
   const handleRefresh = () => {
     fetchOrders(filter, true);
+  };
+
+  const handleStatusUpdate = async (orderId, newStatus) => {
+    await updateOrderStatus(orderId, newStatus);
+    showToast(`Order status updated to ${newStatus}`);
+    setSelectedOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
+    fetchOrders(filter);
+  };
+
+  const handlePaymentConfirm = async (orderId) => {
+    await confirmOrderPayment(orderId);
+    showToast("Payment confirmed successfully");
+    setSelectedOrder((prev) => (prev ? { ...prev, status: "CONFIRMED" } : null));
+    fetchOrders(filter);
   };
 
   return (
@@ -1130,6 +1216,8 @@ export default function Orders() {
             onClose={() =>
               setSelectedOrder(null)
             }
+            onStatusUpdate={handleStatusUpdate}
+            onPaymentConfirm={handlePaymentConfirm}
             onAction={(message) => {
               setSelectedOrder(null);
               showToast(message);

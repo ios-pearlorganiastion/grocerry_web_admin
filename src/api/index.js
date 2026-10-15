@@ -1,0 +1,10 @@
+export * from "./authApis";
+export * from "./staffApis";
+export * from "./categoriesApis";
+export * from "./brandApis";
+export * from "./productApis";
+export * from "./order.api";
+export * from "./inventoryApis";
+export * from "./uploadApis";
+export * from "./affiliateApis";
+export { default as api } from "./axios";
