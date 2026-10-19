@@ -44,7 +44,7 @@ import {
 /* =========================================================
    HELPERS
 ========================================================= */
-
+const PAGE_SIZE = 10;
 const normalizeList = (response) => {
   if (Array.isArray(response)) return response;
   if (Array.isArray(response?.data)) return response.data;
@@ -132,7 +132,9 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [productModal, setProductModal] = useState(null);
   const [viewModalProduct, setViewModalProduct] = useState(null);
   const [viewLoadingId, setViewLoadingId] = useState(null);
@@ -168,10 +170,23 @@ export default function Products() {
       setError("");
 
       const response = await getProducts({
-        limit: 100,
+        page: currentPage,
+        limit: PAGE_SIZE,
         search,
         categoryId: category,
       });
+
+      const list = normalizeProducts(response);
+      const meta = response?.data?.meta;
+
+      setProducts(list);
+      setTotalPages(meta?.totalPages || 1);
+      setTotalProducts(meta?.total ?? list.length);
+
+      // delete ke baad agar current page khali ho gaya
+      if (meta?.totalPages && currentPage > meta.totalPages) {
+        setCurrentPage(meta.totalPages);
+      }
 
       setProducts(normalizeProducts(response));
     } catch (err) {
@@ -392,8 +407,8 @@ export default function Products() {
     Array.isArray(product.images)
       ? product.images.length
       : productImage(product)
-      ? 1
-      : 0;
+        ? 1
+        : 0;
 
   const totalVariants = products.reduce(
     (sum, product) => sum + (product.variants || []).length,
@@ -478,9 +493,8 @@ export default function Products() {
                 className="inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 text-[9px] font-bold text-white backdrop-blur transition hover:bg-white/20 sm:min-h-10 sm:w-auto sm:text-xs"
               >
                 <RefreshCw
-                  className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
-                    refreshing ? "animate-spin" : ""
-                  }`}
+                  className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${refreshing ? "animate-spin" : ""
+                    }`}
                 />
                 Refresh
               </motion.button>
@@ -504,8 +518,7 @@ export default function Products() {
         >
           <StatCard
             label="Products"
-            value={products.length}
-            icon={Package}
+            value={totalProducts}            icon={Package}
             description="In your catalog"
           />
 
@@ -574,11 +587,10 @@ export default function Products() {
                   key={cat.id || "all"}
                   whileTap={{ scale: 0.96 }}
                   onClick={() => setCategory(cat.id)}
-                  className={`shrink-0 rounded-xl px-3 py-2 text-[8px] font-bold transition-all sm:px-3.5 sm:text-xs ${
-                    active
+                  className={`shrink-0 rounded-xl px-3 py-2 text-[8px] font-bold transition-all sm:px-3.5 sm:text-xs ${active
                       ? "bg-[#315d32] text-white shadow-[0_6px_18px_rgba(49,93,50,0.18)]"
                       : "border border-[#dceacb] bg-white text-[#667065] hover:border-[#315d32] hover:bg-[#eef5e7] hover:text-[#315d32]"
-                  }`}
+                    }`}
                 >
                   {cat.name}
                 </motion.button>
@@ -611,8 +623,8 @@ export default function Products() {
               </h3>
 
               <p className="mt-0.5 text-[9px] text-[#92998e] sm:text-xs">
-                Showing {products.length}{" "}
-                {products.length === 1 ? "product" : "products"}
+         Showing {products.length} of {totalProducts}{" "}
+{totalProducts === 1 ? "product" : "products"}
               </p>
             </div>
 
@@ -667,7 +679,8 @@ export default function Products() {
               Add product
             </motion.button>
           </motion.div>
-        ) : (
+             ) : (
+          <>
           <motion.div
             variants={pageVariants}
             className="grid w-full min-w-0 grid-cols-1 gap-2.5 sm:gap-4"
@@ -681,8 +694,8 @@ export default function Products() {
                 product.isActive !== undefined
                   ? product.isActive
                   : product.active !== undefined
-                  ? product.active
-                  : true;
+                    ? product.active
+                    : true;
 
               return (
                 <motion.div
@@ -808,9 +821,8 @@ export default function Products() {
                                   ].map((heading, index) => (
                                     <th
                                       key={heading}
-                                      className={`border-b border-[#edf1e9] px-4 py-3 text-[9px] font-bold uppercase tracking-wider text-[#92998e] ${
-                                        index === 5 ? "text-right" : "text-left"
-                                      }`}
+                                      className={`border-b border-[#edf1e9] px-4 py-3 text-[9px] font-bold uppercase tracking-wider text-[#92998e] ${index === 5 ? "text-right" : "text-left"
+                                        }`}
                                     >
                                       {heading}
                                     </th>
@@ -1026,6 +1038,38 @@ export default function Products() {
               );
             })}
           </motion.div>
+          {!loading && totalPages > 1 && (
+  <div className="flex flex-col items-center justify-between gap-3 rounded-[16px] border border-[#dceacb] bg-white px-4 py-3 sm:flex-row">
+    <p className="text-[10px] font-semibold text-[#92998e] sm:text-xs">
+      Page {currentPage} of {totalPages} · {totalProducts} products
+    </p>
+
+    <div className="flex items-center gap-1.5">
+      <button
+        type="button"
+        disabled={currentPage === 1}
+        onClick={() => setCurrentPage((p) => p - 1)}
+        className="h-9 rounded-xl border border-[#dceacb] bg-white px-3 text-xs font-bold text-[#667065] transition hover:border-[#315d32] hover:bg-[#eef5e7] disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        Prev
+      </button>
+
+      <span className="px-2 text-xs font-bold text-[#315d32]">
+        {currentPage} / {totalPages}
+      </span>
+
+      <button
+        type="button"
+        disabled={currentPage === totalPages}
+        onClick={() => setCurrentPage((p) => p + 1)}
+        className="h-9 rounded-xl border border-[#dceacb] bg-white px-3 text-xs font-bold text-[#667065] transition hover:border-[#315d32] hover:bg-[#eef5e7] disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+          )}
+          </>
         )}
       </div>
 
@@ -1203,8 +1247,8 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
         Array.isArray(product.images) && product.images.length
           ? product.images
           : [product.imageUrl || product.image || product.productImage || ""].filter(
-              Boolean
-            );
+            Boolean
+          );
 
       setImages(
         existingImages.map((url) => ({
@@ -1382,8 +1426,7 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
           onSuccess("Product created successfully");
         } catch (stockError) {
           onSuccess(
-            `Product created, but stock could not be added. ${
-              stockError?.message || "Unknown error"
+            `Product created, but stock could not be added. ${stockError?.message || "Unknown error"
             }`
           );
         }
@@ -1470,15 +1513,15 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
         isEdit
           ? product.name || "Edit product"
           : isBulk
-          ? "Bulk import products"
-          : "Add product"
+            ? "Bulk import products"
+            : "Add product"
       }
       subtitle={
         isEdit
           ? "Update your product information and catalog details."
           : isBulk
-          ? "Upload a CSV or Excel file to create many products at once."
-          : "Create a product with pricing, pack size and inventory."
+            ? "Upload a CSV or Excel file to create many products at once."
+            : "Create a product with pricing, pack size and inventory."
       }
       size="lg"
       onClose={() => !(loading || bulkLoading) && onClose()}
@@ -1494,11 +1537,10 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
               key={value}
               type="button"
               onClick={() => setMode(value)}
-              className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-lg px-2 text-[10px] font-bold transition sm:text-xs ${
-                mode === value
+              className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-lg px-2 text-[10px] font-bold transition sm:text-xs ${mode === value
                   ? "bg-[#315d32] text-white shadow-[0_6px_18px_rgba(49,93,50,0.18)]"
                   : "text-[#667065] hover:bg-white"
-              }`}
+                }`}
             >
               <Icon size={14} />
               <span className="truncate">{label}</span>
@@ -1883,8 +1925,8 @@ function ProductDetailModal({ product, getStockStatus, onClose, onEdit }) {
     Array.isArray(product.images) && product.images.length
       ? product.images
       : [product.imageUrl || product.image || product.productImage || ""].filter(
-          Boolean
-        );
+        Boolean
+      );
 
   const variants = product.variants || [];
 
@@ -1892,8 +1934,8 @@ function ProductDetailModal({ product, getStockStatus, onClose, onEdit }) {
     product.isActive !== undefined
       ? product.isActive
       : product.active !== undefined
-      ? product.active
-      : true;
+        ? product.active
+        : true;
 
   const mainImage = images[activeImage] || images[0] || "";
 
@@ -1947,11 +1989,10 @@ function ProductDetailModal({ product, getStockStatus, onClose, onEdit }) {
                   key={url + index}
                   type="button"
                   onClick={() => setActiveImage(index)}
-                  className={`h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 transition ${
-                    index === activeImage
+                  className={`h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 transition ${index === activeImage
                       ? "border-[#315d32]"
                       : "border-[#dceacb] opacity-80 hover:opacity-100"
-                  }`}
+                    }`}
                 >
                   <img
                     src={url}
@@ -2226,8 +2267,8 @@ function EditVariantModal({ productName, variant, onClose, onSave }) {
       variant.sellingPrice != null
         ? String(variant.sellingPrice)
         : variant.price != null
-        ? String(variant.price)
-        : "",
+          ? String(variant.price)
+          : "",
     isActive: variant.isActive !== undefined ? variant.isActive : true,
   });
 
@@ -2499,11 +2540,10 @@ function StatCard({ label, value, description, icon: Icon, danger = false }) {
         </div>
 
         <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-300 sm:h-11 sm:w-11 ${
-            danger
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-300 sm:h-11 sm:w-11 ${danger
               ? "bg-[#f8ecea] text-[#b35a54] group-hover:bg-[#b35a54] group-hover:text-white"
               : "bg-[#eef5e7] text-[#315d32] group-hover:bg-[#315d32] group-hover:text-white"
-          }`}
+            }`}
         >
           <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
@@ -2519,9 +2559,8 @@ function StatCard({ label, value, description, icon: Icon, danger = false }) {
 function StatusBadge({ tone = "neutral", children, onDark = false }) {
   return (
     <span
-      className={`inline-flex max-w-full min-h-6 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 py-1 text-[8px] font-black sm:min-h-7 sm:px-2.5 sm:text-[9px] ${
-        onDark ? "bg-white text-[#315d32]" : TONE_STYLE[tone]
-      }`}
+      className={`inline-flex max-w-full min-h-6 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 py-1 text-[8px] font-black sm:min-h-7 sm:px-2.5 sm:text-[9px] ${onDark ? "bg-white text-[#315d32]" : TONE_STYLE[tone]
+        }`}
     >
       <span className="truncate">{children}</span>
     </span>
@@ -2534,11 +2573,10 @@ function ActionButton({ icon: Icon, label, onClick, danger = false, loading = fa
       type="button"
       onClick={onClick}
       disabled={loading}
-      className={`inline-flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-xl border px-3 text-[10px] font-bold transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 sm:text-xs ${
-        danger
+      className={`inline-flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-xl border px-3 text-[10px] font-bold transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 sm:text-xs ${danger
           ? "border-[#efd3d0] bg-[#fff8f7] text-[#b35a54] hover:border-[#b35a54] hover:bg-[#f8ecea]"
           : "border-[#dceacb] bg-white text-[#667065] hover:border-[#315d32] hover:bg-[#eef5e7] hover:text-[#315d32]"
-      }`}
+        }`}
     >
       {loading ? (
         <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />
@@ -2669,7 +2707,7 @@ function Select({ children, value, onChange, required, disabled }) {
           tabIndex={-1}
           required
           value={current}
-          onChange={() => {}}
+          onChange={() => { }}
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 h-full w-full opacity-0"
         />
@@ -2685,9 +2723,8 @@ function Select({ children, value, onChange, required, disabled }) {
       </button>
 
       <ChevronDown
-        className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#92998e] transition-transform ${
-          open ? "rotate-180" : ""
-        }`}
+        className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#92998e] transition-transform ${open ? "rotate-180" : ""
+          }`}
       />
 
       {open && (
@@ -2700,11 +2737,10 @@ function Select({ children, value, onChange, required, disabled }) {
                 key={option.value}
                 type="button"
                 onClick={() => choose(option)}
-                className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold transition sm:text-sm ${
-                  isSelected
+                className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold transition sm:text-sm ${isSelected
                     ? "bg-[#eef5e7] text-[#315d32]"
                     : "text-[#202a20] hover:bg-[#eef5e7] hover:text-[#315d32]"
-                }`}
+                  }`}
               >
                 <span className="truncate">{option.label}</span>
                 {isSelected && <Check className="h-3.5 w-3.5 shrink-0" />}
@@ -2729,8 +2765,8 @@ function ModalButton({
   const style = primary
     ? "bg-[#315d32] text-white shadow-[0_8px_20px_rgba(49,93,50,0.2)] hover:bg-[#274d29]"
     : danger
-    ? "bg-[#b35a54] text-white shadow-[0_8px_20px_rgba(179,90,84,0.2)] hover:bg-[#9c4b46]"
-    : "border border-[#dceacb] text-[#667065] hover:border-[#315d32] hover:bg-[#f7f8f2]";
+      ? "bg-[#b35a54] text-white shadow-[0_8px_20px_rgba(179,90,84,0.2)] hover:bg-[#9c4b46]"
+      : "border border-[#dceacb] text-[#667065] hover:border-[#315d32] hover:bg-[#f7f8f2]";
 
   return (
     <motion.button

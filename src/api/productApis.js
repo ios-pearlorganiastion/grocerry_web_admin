@@ -24,26 +24,21 @@ export const getBrands = async () => {
   }
 };
 
-export const getProducts = async ({ limit = 100, search = "", categoryId = "" } = {}) => {
-  try {
-    const params = { limit };
-    if (search) params.search = search;
-    if (categoryId) params.categoryId = categoryId;
+export const getProducts = async ({
+  page = 1,
+  limit = 10,
+  search = "",
+  categoryId = "",
+} = {}) => {
+  const params = { page, limit };
+  if (search) params.search = search;
+  if (categoryId) params.categoryId = categoryId;
 
-    const response = await api.get("/products", { params });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching products:", error);
-  }
-};
+  const response = await api.get("/products", { params });
+  return response.data;
+}; 
 
-/*
- * Both create and update carry images directly on the /products route as
- * multipart/form-data (name, slug, description, brandId, categoryId,
- * variants as a JSON string on create, and one or more "images" files).
- * The axios instance strips the default JSON Content-Type for any FormData
- * body, so the browser can set the correct multipart boundary.
- */
+
 
 export const createProduct = async (formData) => {
   try {
