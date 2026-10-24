@@ -234,7 +234,7 @@ export default function Products() {
     const timer = setTimeout(loadProducts, 400);
 
     return () => clearTimeout(timer);
-  }, [search, category]);
+  }, [search, category, currentPage]);
 
   useEffect(() => {
     loadInventory(products);
@@ -561,14 +561,20 @@ export default function Products() {
               <input
                 type="text"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
                 placeholder="Search products or scan SKU..."
                 className="h-10 w-full min-w-0 bg-transparent px-2 text-[11px] text-[#202a20] outline-none placeholder:text-[#92998e] sm:text-xs"
               />
 
               {search && (
                 <button
-                  onClick={() => setSearch("")}
+                  onClick={() => {
+                    setSearch("");
+                    setCurrentPage(1);
+                  }}
                   className="shrink-0 text-[#92998e] transition hover:text-[#315d32]"
                   aria-label="Clear search"
                 >
@@ -586,7 +592,10 @@ export default function Products() {
                 <motion.button
                   key={cat.id || "all"}
                   whileTap={{ scale: 0.96 }}
-                  onClick={() => setCategory(cat.id)}
+                  onClick={() => {
+                    setCategory(cat.id);
+                    setCurrentPage(1);
+                  }}
                   className={`shrink-0 rounded-xl px-3 py-2 text-[8px] font-bold transition-all sm:px-3.5 sm:text-xs ${active
                     ? "bg-[#315d32] text-white shadow-[0_6px_18px_rgba(49,93,50,0.18)]"
                     : "border border-[#dceacb] bg-white text-[#667065] hover:border-[#315d32] hover:bg-[#eef5e7] hover:text-[#315d32]"
@@ -1194,9 +1203,10 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
   const isEdit = !!product;
   const fileInputRef = useRef(null);
   const csvInputRef = useRef(null);
-  const cameraInputRef = useRef(null);
+  const cameraInputRef = useRef(null);            // 👈 NEW (mobile fallback)
   const [cameraOpen, setCameraOpen] = useState(false);
-  const [mode, setMode] = useState("single");
+
+  const [mode, setMode] = useState("single"); // "single" | "bulk"
 
   const [form, setForm] = useState({
     name: "",
@@ -1332,8 +1342,10 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
       },
     ]);
   };
+
   const removeImage = (imageId) =>
     setImages((prev) => prev.filter((image) => image.id !== imageId));
+
 
   const makePrimary = (imageId) =>
     setImages((prev) => {
@@ -1520,90 +1532,197 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
   );
 
   return (
-    <ModalShell
-      eyebrow={isEdit ? "Edit product" : isBulk ? "Bulk import" : "New product"}
-      title={
-        isEdit
-          ? product.name || "Edit product"
-          : isBulk
-            ? "Bulk import products"
-            : "Add product"
-      }
-      subtitle={
-        isEdit
-          ? "Update your product information and catalog details."
-          : isBulk
-            ? "Upload a CSV or Excel file to create many products at once."
-            : "Create a product with pricing, pack size and inventory."
-      }
-      size="lg"
-      onClose={() => !(loading || bulkLoading) && onClose()}
-      footer={footer}
-    >
-      {!isEdit && (
-        <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-[#f7f8f2] p-1 sm:mb-5">
-          {[
-            ["single", "Single product", Package],
-            ["bulk", "Bulk import", Upload],
-          ].map(([value, label, Icon]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setMode(value)}
-              className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-lg px-2 text-[10px] font-bold transition sm:text-xs ${mode === value
-                ? "bg-[#315d32] text-white shadow-[0_6px_18px_rgba(49,93,50,0.18)]"
-                : "text-[#667065] hover:bg-white"
-                }`}
-            >
-              <Icon size={14} />
-              <span className="truncate">{label}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {isBulk ? (
-        <form id="bulk-import-form" onSubmit={submitBulkImport} className="space-y-3.5 sm:space-y-4">
-          {bulkError && <ErrorBox>{bulkError}</ErrorBox>}
-
-          {bulkResult && (
-            <div className="rounded-xl border border-[#dceacb] bg-[#eef5e7] px-3 py-2.5 text-[11px] font-semibold text-[#315d32] sm:text-sm">
-              Import finished.
-              {bulkResult.created !== null && ` ${bulkResult.created} created.`}
-              {bulkResult.failed ? ` ${bulkResult.failed} failed.` : ""}
-
-              {bulkResult.errors?.length > 0 && (
-                <ul className="mt-2 list-disc pl-5 text-[#a07824]">
-                  {bulkResult.errors.slice(0, 5).map((err, i) => (
-                    <li key={i} className="break-words">
-                      {typeof err === "string"
-                        ? err
-                        : err.message || JSON.stringify(err)}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-
-          <div className="rounded-xl border border-[#dceacb] bg-[#f7f8f2] p-3 sm:p-4">
-            <p className="text-[11px] font-black text-[#202a20] sm:text-xs">
-              Expected columns
-            </p>
-
-            <p className="mt-1.5 text-[10px] leading-5 text-[#92998e] sm:text-[11px]">
-              Name, Description, SKU, MRP, SellingPrice, Unit, Weight,
-              InitialStock, ImageUrl. Every row is created under the category
-              (and brand, if chosen) selected below.
-            </p>
+    <>
+      <ModalShell
+        eyebrow={isEdit ? "Edit product" : isBulk ? "Bulk import" : "New product"}
+        title={
+          isEdit
+            ? product.name || "Edit product"
+            : isBulk
+              ? "Bulk import products"
+              : "Add product"
+        }
+        subtitle={
+          isEdit
+            ? "Update your product information and catalog details."
+            : isBulk
+              ? "Upload a CSV or Excel file to create many products at once."
+              : "Create a product with pricing, pack size and inventory."
+        }
+        size="lg"
+        onClose={() => !(loading || bulkLoading) && onClose()}
+        footer={footer}
+      >
+        {!isEdit && (
+          <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-[#f7f8f2] p-1 sm:mb-5">
+            {[
+              ["single", "Single product", Package],
+              ["bulk", "Bulk import", Upload],
+            ].map(([value, label, Icon]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setMode(value)}
+                className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-lg px-2 text-[10px] font-bold transition sm:text-xs ${mode === value
+                  ? "bg-[#315d32] text-white shadow-[0_6px_18px_rgba(49,93,50,0.18)]"
+                  : "text-[#667065] hover:bg-white"
+                  }`}
+              >
+                <Icon size={14} />
+                <span className="truncate">{label}</span>
+              </button>
+            ))}
           </div>
+        )}
 
-          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4">
+        {isBulk ? (
+          <form id="bulk-import-form" onSubmit={submitBulkImport} className="space-y-3.5 sm:space-y-4">
+            {bulkError && <ErrorBox>{bulkError}</ErrorBox>}
+
+            {bulkResult && (
+              <div className="rounded-xl border border-[#dceacb] bg-[#eef5e7] px-3 py-2.5 text-[11px] font-semibold text-[#315d32] sm:text-sm">
+                Import finished.
+                {bulkResult.created !== null && ` ${bulkResult.created} created.`}
+                {bulkResult.failed ? ` ${bulkResult.failed} failed.` : ""}
+
+                {bulkResult.errors?.length > 0 && (
+                  <ul className="mt-2 list-disc pl-5 text-[#a07824]">
+                    {bulkResult.errors.slice(0, 5).map((err, i) => (
+                      <li key={i} className="break-words">
+                        {typeof err === "string"
+                          ? err
+                          : err.message || JSON.stringify(err)}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+
+            <div className="rounded-xl border border-[#dceacb] bg-[#f7f8f2] p-3 sm:p-4">
+              <p className="text-[11px] font-black text-[#202a20] sm:text-xs">
+                Expected columns
+              </p>
+
+              <p className="mt-1.5 text-[10px] leading-5 text-[#92998e] sm:text-[11px]">
+                Name, Description, SKU, MRP, SellingPrice, Unit, Weight,
+                InitialStock, ImageUrl. Every row is created under the category
+                (and brand, if chosen) selected below.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4">
+              <FormField label="Category" required>
+                <Select
+                  required
+                  value={bulkCategoryId}
+                  onChange={(e) => setBulkCategoryId(e.target.value)}
+                >
+                  <option value="">Select category</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </Select>
+              </FormField>
+
+              <FormField label="Brand">
+                <Select
+                  value={bulkBrandId}
+                  onChange={(e) => setBulkBrandId(e.target.value)}
+                >
+                  <option value="">No brand</option>
+                  {(brands || []).map((brand) => (
+                    <option key={brand.id} value={brand.id}>
+                      {brand.name}
+                    </option>
+                  ))}
+                </Select>
+              </FormField>
+            </div>
+
+            <FormField label="Import file" hint="Supports CSV or Excel (.xlsx / .xls) files.">
+              <button
+                type="button"
+                onClick={() => csvInputRef.current?.click()}
+                className="flex w-full min-w-0 items-center gap-3 rounded-xl border-2 border-dashed border-[#dceacb] bg-[#f7f8f2] p-3.5 text-left transition hover:border-[#315d32] hover:bg-[#eef5e7]/60 sm:p-4"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#315d32] shadow-sm">
+                  <Upload size={17} />
+                </span>
+
+                <span className="min-w-0">
+                  <span className="block truncate text-xs font-black text-[#202a20]">
+                    {bulkFile ? bulkFile.name : "Choose file"}
+                  </span>
+
+                  <span className="mt-0.5 block text-[10px] text-[#92998e]">
+                    {bulkFile ? "Tap to change file" : "CSV, XLSX or XLS"}
+                  </span>
+                </span>
+              </button>
+
+              <input
+                ref={csvInputRef}
+                type="file"
+                accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                onChange={(e) => {
+                  setBulkFile(e.target.files?.[0] || null);
+                  e.target.value = "";
+                  setBulkError("");
+                  setBulkResult(null);
+                }}
+                className="hidden"
+              />
+            </FormField>
+          </form>
+        ) : (
+          <form id="product-form" onSubmit={submit} className="space-y-4 sm:space-y-5">
+            {error && <ErrorBox>{error}</ErrorBox>}
+
+            <SectionTitle>Product information</SectionTitle>
+
+            <FormField label="Product name" required>
+              <input
+                required
+                value={form.name}
+                onChange={(e) => update("name", e.target.value)}
+                placeholder="Enter product name"
+                className={inputClass}
+              />
+            </FormField>
+
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4">
+              <FormField label="Slug" hint="Automatically generated from the product name.">
+                <input
+                  value={form.slug}
+                  onChange={(e) => updateSlug(e.target.value)}
+                  placeholder="product-slug"
+                  className={inputClass}
+                />
+              </FormField>
+
+              <FormField label="Brand">
+                <Select
+                  value={form.brandId}
+                  onChange={(e) => update("brandId", e.target.value)}
+                >
+                  <option value="">No brand</option>
+                  {(brands || []).map((brand) => (
+                    <option key={brand.id} value={brand.id}>
+                      {brand.name}
+                    </option>
+                  ))}
+                </Select>
+              </FormField>
+            </div>
+
             <FormField label="Category" required>
               <Select
                 required
-                value={bulkCategoryId}
-                onChange={(e) => setBulkCategoryId(e.target.value)}
+                value={form.categoryId}
+                onChange={(e) => update("categoryId", e.target.value)}
               >
                 <option value="">Select category</option>
                 {categories.map((cat) => (
@@ -1614,335 +1733,241 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
               </Select>
             </FormField>
 
-            <FormField label="Brand">
-              <Select
-                value={bulkBrandId}
-                onChange={(e) => setBulkBrandId(e.target.value)}
-              >
-                <option value="">No brand</option>
-                {(brands || []).map((brand) => (
-                  <option key={brand.id} value={brand.id}>
-                    {brand.name}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
-          </div>
-
-          <FormField label="Import file" hint="Supports CSV or Excel (.xlsx / .xls) files.">
-            <button
-              type="button"
-              onClick={() => csvInputRef.current?.click()}
-              className="flex w-full min-w-0 items-center gap-3 rounded-xl border-2 border-dashed border-[#dceacb] bg-[#f7f8f2] p-3.5 text-left transition hover:border-[#315d32] hover:bg-[#eef5e7]/60 sm:p-4"
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#315d32] shadow-sm">
-                <Upload size={17} />
-              </span>
-
-              <span className="min-w-0">
-                <span className="block truncate text-xs font-black text-[#202a20]">
-                  {bulkFile ? bulkFile.name : "Choose file"}
-                </span>
-
-                <span className="mt-0.5 block text-[10px] text-[#92998e]">
-                  {bulkFile ? "Tap to change file" : "CSV, XLSX or XLS"}
-                </span>
-              </span>
-            </button>
-
-            <input
-              ref={csvInputRef}
-              type="file"
-              accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-              onChange={(e) => {
-                setBulkFile(e.target.files?.[0] || null);
-                e.target.value = "";
-                setBulkError("");
-                setBulkResult(null);
-              }}
-              className="hidden"
-            />
-          </FormField>
-        </form>
-      ) : (
-        <form id="product-form" onSubmit={submit} className="space-y-4 sm:space-y-5">
-          {error && <ErrorBox>{error}</ErrorBox>}
-
-          <SectionTitle>Product information</SectionTitle>
-
-          <FormField label="Product name" required>
-            <input
-              required
-              value={form.name}
-              onChange={(e) => update("name", e.target.value)}
-              placeholder="Enter product name"
-              className={inputClass}
-            />
-          </FormField>
-
-          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4">
-            <FormField label="Slug" hint="Automatically generated from the product name.">
-              <input
-                value={form.slug}
-                onChange={(e) => updateSlug(e.target.value)}
-                placeholder="product-slug"
-                className={inputClass}
+            <FormField label="Description">
+              <textarea
+                value={form.description}
+                onChange={(e) => update("description", e.target.value)}
+                placeholder="Enter product description"
+                rows={4}
+                className={`${inputClass} h-auto resize-none py-2.5 leading-5`}
               />
             </FormField>
 
-            <FormField label="Brand">
-              <Select
-                value={form.brandId}
-                onChange={(e) => update("brandId", e.target.value)}
-              >
-                <option value="">No brand</option>
-                {(brands || []).map((brand) => (
-                  <option key={brand.id} value={brand.id}>
-                    {brand.name}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
-          </div>
+            {isEdit && (
+              <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#dceacb] bg-[#f7f8f2] p-3 sm:p-3.5">
+                <input
+                  type="checkbox"
+                  checked={form.isActive}
+                  onChange={(e) => update("isActive", e.target.checked)}
+                  className="h-4 w-4 accent-[#315d32]"
+                />
 
-          <FormField label="Category" required>
-            <Select
-              required
-              value={form.categoryId}
-              onChange={(e) => update("categoryId", e.target.value)}
-            >
-              <option value="">Select category</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </Select>
-          </FormField>
+                <div>
+                  <p className="text-xs font-black text-[#202a20]">
+                    Product active
+                  </p>
 
-          <FormField label="Description">
-            <textarea
-              value={form.description}
-              onChange={(e) => update("description", e.target.value)}
-              placeholder="Enter product description"
-              rows={4}
-              className={`${inputClass} h-auto resize-none py-2.5 leading-5`}
-            />
-          </FormField>
+                  <p className="text-[10px] text-[#92998e]">
+                    Active products can be displayed in the catalog.
+                  </p>
+                </div>
+              </label>
+            )}
 
-          {isEdit && (
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#dceacb] bg-[#f7f8f2] p-3 sm:p-3.5">
-              <input
-                type="checkbox"
-                checked={form.isActive}
-                onChange={(e) => update("isActive", e.target.checked)}
-                className="h-4 w-4 accent-[#315d32]"
-              />
+            {/* Photos */}
+            <div className="rounded-xl border border-[#dceacb] bg-[#f7f8f2] p-3 sm:rounded-2xl sm:p-4">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <SectionTitle>Product photos</SectionTitle>
 
-              <div>
-                <p className="text-xs font-black text-[#202a20]">
-                  Product active
-                </p>
+                  <p className="mt-1 text-[10px] text-[#92998e]">
+                    New photos upload automatically after you save. JPG, PNG or
+                    WEBP.
+                  </p>
+                </div>
 
-                <p className="text-[10px] text-[#92998e]">
-                  Active products can be displayed in the catalog.
-                </p>
-              </div>
-            </label>
-          )}
-
-          {/* Photos */}
-          <div className="rounded-xl border border-[#dceacb] bg-[#f7f8f2] p-3 sm:rounded-2xl sm:p-4">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <div className="min-w-0">
-                <SectionTitle>Product photos</SectionTitle>
-
-                <p className="mt-1 text-[10px] text-[#92998e]">
-                  New photos upload automatically after you save. JPG, PNG or
-                  WEBP.
-                </p>
+                <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[9px] font-bold text-[#315d32]">
+                  {images.length} photo{images.length !== 1 ? "s" : ""}
+                </span>
               </div>
 
-              <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[9px] font-bold text-[#315d32]">
-                {images.length} photo{images.length !== 1 ? "s" : ""}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3">
-              {images.map((image, index) => (
-                <div
-                  key={image.id}
-                  className="group/img relative aspect-square overflow-hidden rounded-xl border border-[#dceacb] bg-white"
-                >
-                  <img
-                    src={image.previewUrl}
-                    alt={`Product photo ${index + 1}`}
-                    className="h-full w-full object-cover"
-                  />
-
-                  {index === 0 && (
-                    <span className="absolute bottom-0 left-0 right-0 bg-[#315d32] py-0.5 text-center text-[9px] font-bold text-white">
-                      Primary
-                    </span>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => removeImage(image.id)}
-                    aria-label="Remove photo"
-                    className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#202a20]/70 text-white transition hover:bg-[#b35a54]"
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3">
+                {images.map((image, index) => (
+                  <div
+                    key={image.id}
+                    className="group/img relative aspect-square overflow-hidden rounded-xl border border-[#dceacb] bg-white"
                   >
-                    <X className="h-3 w-3" />
-                  </button>
+                    <img
+                      src={image.previewUrl}
+                      alt={`Product photo ${index + 1}`}
+                      className="h-full w-full object-cover"
+                    />
 
-                  {index !== 0 && (
+                    {index === 0 && (
+                      <span className="absolute bottom-0 left-0 right-0 bg-[#315d32] py-0.5 text-center text-[9px] font-bold text-white">
+                        Primary
+                      </span>
+                    )}
+
                     <button
                       type="button"
-                      onClick={() => makePrimary(image.id)}
-                      className="absolute bottom-0 left-0 right-0 bg-[#202a20]/70 py-0.5 text-center text-[9px] font-semibold text-white transition-opacity sm:opacity-0 sm:group-hover/img:opacity-100"
+                      onClick={() => removeImage(image.id)}
+                      aria-label="Remove photo"
+                      className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#202a20]/70 text-white transition hover:bg-[#b35a54]"
                     >
-                      Make primary
+                      <X className="h-3 w-3" />
                     </button>
-                  )}
+
+                    {index !== 0 && (
+                      <button
+                        type="button"
+                        onClick={() => makePrimary(image.id)}
+                        className="absolute bottom-0 left-0 right-0 bg-[#202a20]/70 py-0.5 text-center text-[9px] font-semibold text-white transition-opacity sm:opacity-0 sm:group-hover/img:opacity-100"
+                      >
+                        Make primary
+                      </button>
+                    )}
+                  </div>
+                ))}
+
+                {/* Gallery se upload */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[#dceacb] bg-white text-[10px] font-bold text-[#92998e] transition hover:border-[#315d32] hover:text-[#315d32]"
+                >
+                  <ImagePlus className="h-5 w-5" />
+                  Gallery
+                </button>
+
+                {/* Camera se photo */}
+                <button
+                  type="button"
+                  onClick={() => setCameraOpen(true)}
+                  className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[#dceacb] bg-white text-[10px] font-bold text-[#92998e] transition hover:border-[#315d32] hover:text-[#315d32]"
+                >
+                  <Camera className="h-5 w-5" />
+                  Camera
+                </button>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  onChange={handleImagesChange}
+                  className="hidden"
+                />
+
+                {/* Fallback: phone ka native camera */}
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleImagesChange}
+                  className="hidden"
+                />
+              </div>
+            </div>
+
+            {isEdit && (
+              <p className="rounded-xl bg-[#f7f8f2] px-3 py-2.5 text-[10px] leading-4 text-[#92998e] sm:text-xs">
+                To edit pack sizes (SKU, price, weight, stock), close this and use
+                the Edit button on the pack size itself.
+              </p>
+            )}
+
+            {!isEdit && (
+              <div className="rounded-xl border border-[#dceacb] bg-[#f7f8f2] p-3 sm:rounded-2xl sm:p-4">
+                <div className="mb-3">
+                  <SectionTitle>Pack size</SectionTitle>
+
+                  <p className="mt-1 text-[10px] text-[#92998e]">
+                    Add the initial selling unit and pricing.
+                  </p>
                 </div>
-              ))}
 
-              {/* Gallery se upload */}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[#dceacb] bg-white text-[10px] font-bold text-[#92998e] transition hover:border-[#315d32] hover:text-[#315d32]"
-              >
-                <ImagePlus className="h-5 w-5" />
-                Gallery
-              </button>
+                <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3 sm:gap-4">
+                  <FormField label="SKU" required>
+                    <input
+                      required
+                      value={form.sku}
+                      onChange={(e) => update("sku", e.target.value)}
+                      placeholder="SKU001"
+                      className={inputClass}
+                    />
+                  </FormField>
 
-              {/* 👈 NEW: Camera se photo */}
-              <button
-                type="button"
-                onClick={() => setCameraOpen(true)}
-                className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[#dceacb] bg-white text-[10px] font-bold text-[#92998e] transition hover:border-[#315d32] hover:text-[#315d32]"
-              >
-                <Camera className="h-5 w-5" />
-                Camera
-              </button>
+                  <FormField label="Weight / qty" required>
+                    <input
+                      required
+                      type="number"
+                      step="0.001"
+                      min="0"
+                      value={form.weight}
+                      onChange={(e) => update("weight", e.target.value)}
+                      placeholder="1"
+                      className={inputClass}
+                    />
+                  </FormField>
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                onChange={handleImagesChange}
-                className="hidden"
-              />
+                  <FormField label="Unit">
+                    <Select
+                      value={form.unit}
+                      onChange={(e) => update("unit", e.target.value)}
+                    >
+                      {UNIT_OPTIONS.map((u) => (
+                        <option key={u} value={u}>
+                          {u}
+                        </option>
+                      ))}
+                    </Select>
+                  </FormField>
 
-              {/* 👈 NEW: fallback, phone ka native camera */}
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleImagesChange}
-                className="hidden"
-              />
-            </div>
-          </div>
+                  <FormField label="MRP (₹)" required>
+                    <input
+                      required
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={form.mrp}
+                      onChange={(e) => update("mrp", e.target.value)}
+                      placeholder="50"
+                      className={inputClass}
+                    />
+                  </FormField>
 
-          {isEdit && (
-            <p className="rounded-xl bg-[#f7f8f2] px-3 py-2.5 text-[10px] leading-4 text-[#92998e] sm:text-xs">
-              To edit pack sizes (SKU, price, weight, stock), close this and use
-              the Edit button on the pack size itself.
-            </p>
-          )}
+                  <FormField label="Selling price (₹)" required>
+                    <input
+                      required
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={form.sellingPrice}
+                      onChange={(e) => update("sellingPrice", e.target.value)}
+                      placeholder="40"
+                      className={inputClass}
+                    />
+                  </FormField>
 
-          {!isEdit && (
-            <div className="rounded-xl border border-[#dceacb] bg-[#f7f8f2] p-3 sm:rounded-2xl sm:p-4">
-              <div className="mb-3">
-                <SectionTitle>Pack size</SectionTitle>
-
-                <p className="mt-1 text-[10px] text-[#92998e]">
-                  Add the initial selling unit and pricing.
-                </p>
+                  <FormField label="Initial stock (units)">
+                    <input
+                      type="number"
+                      min="0"
+                      value={form.stock}
+                      onChange={(e) => update("stock", e.target.value)}
+                      className={inputClass}
+                    />
+                  </FormField>
+                </div>
               </div>
+            )}
+          </form>
+        )}
+      </ModalShell>
 
-              <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3 sm:gap-4">
-                <FormField label="SKU" required>
-                  <input
-                    required
-                    value={form.sku}
-                    onChange={(e) => update("sku", e.target.value)}
-                    placeholder="SKU001"
-                    className={inputClass}
-                  />
-                </FormField>
-
-                <FormField label="Weight / qty" required>
-                  <input
-                    required
-                    type="number"
-                    step="0.001"
-                    min="0"
-                    value={form.weight}
-                    onChange={(e) => update("weight", e.target.value)}
-                    placeholder="1"
-                    className={inputClass}
-                  />
-                </FormField>
-
-                <FormField label="Unit">
-                  <Select
-                    value={form.unit}
-                    onChange={(e) => update("unit", e.target.value)}
-                  >
-                    {UNIT_OPTIONS.map((u) => (
-                      <option key={u} value={u}>
-                        {u}
-                      </option>
-                    ))}
-                  </Select>
-                </FormField>
-
-                <FormField label="MRP (₹)" required>
-                  <input
-                    required
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={form.mrp}
-                    onChange={(e) => update("mrp", e.target.value)}
-                    placeholder="50"
-                    className={inputClass}
-                  />
-                </FormField>
-
-                <FormField label="Selling price (₹)" required>
-                  <input
-                    required
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={form.sellingPrice}
-                    onChange={(e) => update("sellingPrice", e.target.value)}
-                    placeholder="40"
-                    className={inputClass}
-                  />
-                </FormField>
-
-                <FormField label="Initial stock (units)">
-                  <input
-                    type="number"
-                    min="0"
-                    value={form.stock}
-                    onChange={(e) => update("stock", e.target.value)}
-                    className={inputClass}
-                  />
-                </FormField>
-              </div>
-            </div>
-          )}
-        </form>
+      {cameraOpen && (
+        <CameraCaptureModal
+          onClose={() => setCameraOpen(false)}
+          onCapture={addCapturedPhoto}
+          onFallback={() => {
+            setCameraOpen(false);
+            cameraInputRef.current?.click();
+          }}
+        />
       )}
-    </ModalShell>
+    </>
   );
 }
 
@@ -2260,42 +2285,30 @@ function AddVariantModal({ productName, onClose, onSave }) {
   };
 
   return (
-    <>
-      <ModalShell
-        eyebrow="New pack size"
-        title="Add pack size"
-        subtitle={productName}
-        onClose={() => !loading && onClose()}
-        footer={
-          <>
-            <ModalButton onClick={onClose} disabled={loading}>
-              Cancel
-            </ModalButton>
+    <ModalShell
+      eyebrow="New pack size"
+      title="Add pack size"
+      subtitle={productName}
+      onClose={() => !loading && onClose()}
+      footer={
+        <>
+          <ModalButton onClick={onClose} disabled={loading}>
+            Cancel
+          </ModalButton>
 
-            <ModalButton primary type="submit" form="add-variant-form" disabled={loading}>
-              {loading && <Loader2 size={14} className="animate-spin" />}
-              {loading ? "Adding..." : "Add pack size"}
-            </ModalButton>
-          </>
-        }
-      >
-        <form id="add-variant-form" onSubmit={submit} className="space-y-3.5 sm:space-y-4">
-          {error && <ErrorBox>{error}</ErrorBox>}
+          <ModalButton primary type="submit" form="add-variant-form" disabled={loading}>
+            {loading && <Loader2 size={14} className="animate-spin" />}
+            {loading ? "Adding..." : "Add pack size"}
+          </ModalButton>
+        </>
+      }
+    >
+      <form id="add-variant-form" onSubmit={submit} className="space-y-3.5 sm:space-y-4">
+        {error && <ErrorBox>{error}</ErrorBox>}
 
-          <VariantFields form={form} update={update} />
-        </form>
-      </ModalShell>
-      {cameraOpen && (
-        <CameraCaptureModal
-          onClose={() => setCameraOpen(false)}
-          onCapture={addCapturedPhoto}
-          onFallback={() => {
-            setCameraOpen(false);
-            cameraInputRef.current?.click();
-          }}
-        />
-      )}
-    </>
+        <VariantFields form={form} update={update} />
+      </form>
+    </ModalShell>
   );
 }
 
@@ -2560,6 +2573,7 @@ function ReceiveStockModal({ productName, variant, currentStock, onClose, onSave
     </ModalShell>
   );
 }
+
 /* =========================================================
    CAMERA CAPTURE MODAL
 ========================================================= */
@@ -2633,7 +2647,6 @@ function CameraCaptureModal({ onClose, onCapture, onFallback }) {
     };
   }, [facingMode]);
 
-  // modal band hone par preview URL free karo
   useEffect(() => {
     return () => {
       if (shot?.url) URL.revokeObjectURL(shot.url);
@@ -2723,11 +2736,9 @@ function CameraCaptureModal({ onClose, onCapture, onFallback }) {
       )}
 
       <div
-        className={`relative overflow-hidden rounded-xl border border-[#dceacb] bg-black ${
-          error ? "hidden" : ""
-        }`}
+        className={`relative overflow-hidden rounded-xl border border-[#dceacb] bg-black ${error ? "hidden" : ""
+          }`}
       >
-        {/* live video, hamesha mounted rehta hai */}
         <video
           ref={videoRef}
           playsInline
@@ -2735,7 +2746,6 @@ function CameraCaptureModal({ onClose, onCapture, onFallback }) {
           className="aspect-[4/3] w-full object-cover"
         />
 
-        {/* capture ke baad preview upar dikhta hai */}
         {shot && (
           <img
             src={shot.url}
@@ -2753,6 +2763,7 @@ function CameraCaptureModal({ onClose, onCapture, onFallback }) {
     </ModalShell>
   );
 }
+
 /* =========================================================
    SHARED UI PIECES
 ========================================================= */
