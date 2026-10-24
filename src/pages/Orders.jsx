@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   RefreshCw,
   ShoppingBag,
-  ChevronRight,
+  ChevronRight, ChevronDown,
   X,
   Phone,
   MapPin,
@@ -168,10 +168,9 @@ function StatusBadge({ status }) {
         scale: 1.05,
         y: -1,
       }}
-      className={`inline-flex max-w-full min-h-6 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-2 py-1 text-[7px] font-black sm:min-h-7 sm:gap-1.5 sm:px-2.5 sm:text-[9px] ${
-        STATUS_STYLE[status] ||
+      className={`inline-flex max-w-full min-h-6 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-2 py-1 text-[7px] font-black sm:min-h-7 sm:gap-1.5 sm:px-2.5 sm:text-[9px] ${STATUS_STYLE[status] ||
         "bg-[#f7f8f2] text-[#667065]"
-      }`}
+        }`}
     >
       <Icon className="h-2.5 w-2.5 shrink-0 sm:h-3 sm:w-3" />
       <span className="truncate">
@@ -194,15 +193,15 @@ function OrderDetailsModal({
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
   const [actionError, setActionError] = useState("");
-
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const items = Array.isArray(order?.items)
     ? order.items
     : [];
 
   const total = Number(
     order?.total ??
-      order?.subtotal ??
-      0
+    order?.subtotal ??
+    0
   );
 
   const subtotal = Number(
@@ -489,12 +488,12 @@ function OrderDetailsModal({
                       ₹
                       {Number(
                         item.lineTotal ??
-                          Number(
-                            item.unitPrice || 0
-                          ) *
-                            Number(
-                              item.quantity || 0
-                            )
+                        Number(
+                          item.unitPrice || 0
+                        ) *
+                        Number(
+                          item.quantity || 0
+                        )
                       ).toLocaleString("en-IN")}
                     </span>
                   </div>
@@ -522,17 +521,57 @@ function OrderDetailsModal({
             </p>
 
             <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="h-10 flex-1 rounded-xl border border-[#dceacb] bg-white px-3 text-xs font-semibold text-[#202a20] outline-none transition focus:border-[#315d32]"
-              >
-                {STATUSES.filter(([val]) => val).map(([val, label]) => (
-                  <option key={val} value={val}>
-                    {label} ({val})
-                  </option>
-                ))}
-              </select>
+
+              <div className="relative min-w-0 flex-1">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setIsStatusDropdownOpen((prev) => !prev)
+                  }
+                  className="flex h-11 w-full min-w-0 items-center justify-between gap-2 rounded-xl border border-[#dceacb] bg-white px-3 text-left text-xs font-semibold text-[#202a20] outline-none transition hover:border-[#315d32] focus:border-[#315d32]"
+                >
+                  <span className="truncate">
+                    {STATUS_LABEL[selectedStatus] || selectedStatus}
+                  </span>
+
+                  <ChevronDown
+                    size={16}
+                    className={`shrink-0 transition-transform ${isStatusDropdownOpen ? "rotate-180" : ""
+                      }`}
+                  />
+                </button>
+
+                {isStatusDropdownOpen && (
+                  <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-52 overflow-y-auto rounded-xl border border-[#dceacb] bg-white p-1.5 shadow-xl">
+                    {STATUSES.filter(([value]) => value).map(
+                      ([value, label]) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => {
+                            setSelectedStatus(value);
+                            setIsStatusDropdownOpen(false);
+                          }}
+                          className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-left text-xs transition ${selectedStatus === value
+                              ? "bg-[#eef5e7] font-bold text-[#315d32]"
+                              : "text-[#202a20] hover:bg-[#f7f8f2]"
+                            }`}
+                        >
+                          <span>{label}</span>
+
+                          {selectedStatus === value && (
+                            <CheckCircle2
+                              size={15}
+                              className="shrink-0 text-[#315d32]"
+                            />
+                          )}
+                        </button>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
+
 
               <motion.button
                 whileTap={{ scale: 0.97 }}
@@ -669,7 +708,7 @@ export default function Orders() {
           setMeta({
             total: Number(
               responseMeta.total ??
-                items.length
+              items.length
             ),
             page: Number(
               responseMeta.page ?? 1
@@ -703,7 +742,7 @@ export default function Orders() {
 
         setError(
           err?.message ||
-            "Unable to load orders. Please try again."
+          "Unable to load orders. Please try again."
         );
       } finally {
         setLoading(false);
@@ -844,11 +883,10 @@ export default function Orders() {
                 className="inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-xl bg-white px-4 text-[9px] font-bold text-[#315d32] shadow-lg transition-all disabled:cursor-not-allowed disabled:opacity-70 sm:min-h-10 sm:w-auto sm:text-xs"
               >
                 <RefreshCw
-                  className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
-                    refreshing
+                  className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${refreshing
                       ? "animate-spin"
                       : ""
-                  }`}
+                    }`}
                 />
                 Refresh Orders
               </motion.button>
@@ -880,11 +918,10 @@ export default function Orders() {
                     onClick={() =>
                       setFilter(value)
                     }
-                    className={`shrink-0 rounded-xl px-3 py-2 text-[8px] font-bold transition-all sm:px-3.5 sm:text-xs ${
-                      active
+                    className={`shrink-0 rounded-xl px-3 py-2 text-[8px] font-bold transition-all sm:px-3.5 sm:text-xs ${active
                         ? "bg-[#315d32] text-white shadow-[0_6px_18px_rgba(49,93,50,0.18)]"
                         : "border border-[#dceacb] bg-white text-[#667065] hover:border-[#b8df7d] hover:bg-[#eef5e7] hover:text-[#315d32]"
-                    }`}
+                      }`}
                   >
                     {label}
                   </motion.button>
@@ -902,9 +939,9 @@ export default function Orders() {
             <h3 className="text-[13px] font-black tracking-tight text-[#202a20] sm:text-base">
               {filter
                 ? STATUSES.find(
-                    ([value]) =>
-                      value === filter
-                  )?.[1]
+                  ([value]) =>
+                    value === filter
+                )?.[1]
                 : "All Orders"}
             </h3>
 
@@ -991,23 +1028,23 @@ export default function Orders() {
             {orders.map((order) => {
               const amount = Number(
                 order.total ??
-                  order.subtotal ??
-                  order.items?.reduce(
-                    (sum, item) =>
-                      sum +
+                order.subtotal ??
+                order.items?.reduce(
+                  (sum, item) =>
+                    sum +
+                    Number(
+                      item.lineTotal ??
                       Number(
-                        item.lineTotal ??
-                          Number(
-                            item.unitPrice || 0
-                          ) *
-                            Number(
-                              item.quantity ||
-                                0
-                            )
-                      ),
-                    0
-                  ) ??
+                        item.unitPrice || 0
+                      ) *
+                      Number(
+                        item.quantity ||
+                        0
+                      )
+                    ),
                   0
+                ) ??
+                0
               );
 
               const itemCount =

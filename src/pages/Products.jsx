@@ -20,7 +20,7 @@ import {
   PackagePlus,
   Power,
   ChevronDown,
-  Check,
+  Check, Camera,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -518,7 +518,7 @@ export default function Products() {
         >
           <StatCard
             label="Products"
-            value={totalProducts}            icon={Package}
+            value={totalProducts} icon={Package}
             description="In your catalog"
           />
 
@@ -588,8 +588,8 @@ export default function Products() {
                   whileTap={{ scale: 0.96 }}
                   onClick={() => setCategory(cat.id)}
                   className={`shrink-0 rounded-xl px-3 py-2 text-[8px] font-bold transition-all sm:px-3.5 sm:text-xs ${active
-                      ? "bg-[#315d32] text-white shadow-[0_6px_18px_rgba(49,93,50,0.18)]"
-                      : "border border-[#dceacb] bg-white text-[#667065] hover:border-[#315d32] hover:bg-[#eef5e7] hover:text-[#315d32]"
+                    ? "bg-[#315d32] text-white shadow-[0_6px_18px_rgba(49,93,50,0.18)]"
+                    : "border border-[#dceacb] bg-white text-[#667065] hover:border-[#315d32] hover:bg-[#eef5e7] hover:text-[#315d32]"
                     }`}
                 >
                   {cat.name}
@@ -623,8 +623,8 @@ export default function Products() {
               </h3>
 
               <p className="mt-0.5 text-[9px] text-[#92998e] sm:text-xs">
-         Showing {products.length} of {totalProducts}{" "}
-{totalProducts === 1 ? "product" : "products"}
+                Showing {products.length} of {totalProducts}{" "}
+                {totalProducts === 1 ? "product" : "products"}
               </p>
             </div>
 
@@ -679,396 +679,396 @@ export default function Products() {
               Add product
             </motion.button>
           </motion.div>
-             ) : (
+        ) : (
           <>
-          <motion.div
-            variants={pageVariants}
-            className="grid w-full min-w-0 grid-cols-1 gap-2.5 sm:gap-4"
-          >
-            {products.map((product) => {
-              const image = productImage(product);
-              const imageCount = productImageCount(product);
-              const variants = product.variants || [];
+            <motion.div
+              variants={pageVariants}
+              className="grid w-full min-w-0 grid-cols-1 gap-2.5 sm:gap-4"
+            >
+              {products.map((product) => {
+                const image = productImage(product);
+                const imageCount = productImageCount(product);
+                const variants = product.variants || [];
 
-              const active =
-                product.isActive !== undefined
-                  ? product.isActive
-                  : product.active !== undefined
-                    ? product.active
-                    : true;
+                const active =
+                  product.isActive !== undefined
+                    ? product.isActive
+                    : product.active !== undefined
+                      ? product.active
+                      : true;
 
-              return (
-                <motion.div
-                  key={product.id}
-                  variants={itemVariants}
-                  className="group relative w-full min-w-0 overflow-hidden rounded-[16px] border border-[#dceacb] bg-white shadow-[0_8px_30px_rgba(49,93,50,0.05)] transition-all duration-300 hover:border-[#b8df7d] hover:shadow-[0_18px_45px_rgba(49,93,50,0.12)] sm:rounded-[22px]"
-                >
-                  <div className="absolute bottom-0 left-0 top-0 w-1 bg-[#315d32] opacity-0 transition-opacity group-hover:opacity-100" />
+                return (
+                  <motion.div
+                    key={product.id}
+                    variants={itemVariants}
+                    className="group relative w-full min-w-0 overflow-hidden rounded-[16px] border border-[#dceacb] bg-white shadow-[0_8px_30px_rgba(49,93,50,0.05)] transition-all duration-300 hover:border-[#b8df7d] hover:shadow-[0_18px_45px_rgba(49,93,50,0.12)] sm:rounded-[22px]"
+                  >
+                    <div className="absolute bottom-0 left-0 top-0 w-1 bg-[#315d32] opacity-0 transition-opacity group-hover:opacity-100" />
 
-                  <div className="w-full min-w-0 p-3 sm:p-4 lg:p-5">
-                    {/* Header */}
-                    <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-5">
-                      <div className="flex min-w-0 flex-1 items-start gap-2.5 sm:gap-3.5">
-                        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-[#dceacb] bg-[#eef5e7] sm:h-[76px] sm:w-[76px] sm:rounded-2xl">
-                          {image ? (
-                            <img
-                              src={image}
-                              alt={product.name}
-                              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center text-[#92998e]">
-                              <ImageOff className="h-5 w-5" />
-                            </div>
-                          )}
+                    <div className="w-full min-w-0 p-3 sm:p-4 lg:p-5">
+                      {/* Header */}
+                      <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-5">
+                        <div className="flex min-w-0 flex-1 items-start gap-2.5 sm:gap-3.5">
+                          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-[#dceacb] bg-[#eef5e7] sm:h-[76px] sm:w-[76px] sm:rounded-2xl">
+                            {image ? (
+                              <img
+                                src={image}
+                                alt={product.name}
+                                className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-[#92998e]">
+                                <ImageOff className="h-5 w-5" />
+                              </div>
+                            )}
 
-                          {imageCount > 1 && (
-                            <span className="absolute bottom-0 right-0 rounded-tl-lg bg-[#315d32]/90 px-1.5 py-0.5 text-[8px] font-bold text-white sm:text-[9px]">
-                              +{imageCount - 1}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="min-w-0 flex-1 overflow-hidden">
-                          <div className="flex min-w-0 items-center gap-1.5">
-                            <h4 className="min-w-0 flex-1 truncate text-[12px] font-black text-[#202a20] sm:text-base">
-                              {product.name}
-                            </h4>
-
-                            <StatusBadge tone={active ? "brand" : "neutral"}>
-                              {active ? "Active" : "Inactive"}
-                            </StatusBadge>
+                            {imageCount > 1 && (
+                              <span className="absolute bottom-0 right-0 rounded-tl-lg bg-[#315d32]/90 px-1.5 py-0.5 text-[8px] font-bold text-white sm:text-[9px]">
+                                +{imageCount - 1}
+                              </span>
+                            )}
                           </div>
 
-                          <p className="mt-1 truncate text-[10px] font-semibold text-[#92998e] sm:text-xs">
-                            {brandName(product) && `${brandName(product)} · `}
-                            {categoryName(product)}
+                          <div className="min-w-0 flex-1 overflow-hidden">
+                            <div className="flex min-w-0 items-center gap-1.5">
+                              <h4 className="min-w-0 flex-1 truncate text-[12px] font-black text-[#202a20] sm:text-base">
+                                {product.name}
+                              </h4>
+
+                              <StatusBadge tone={active ? "brand" : "neutral"}>
+                                {active ? "Active" : "Inactive"}
+                              </StatusBadge>
+                            </div>
+
+                            <p className="mt-1 truncate text-[10px] font-semibold text-[#92998e] sm:text-xs">
+                              {brandName(product) && `${brandName(product)} · `}
+                              {categoryName(product)}
+                            </p>
+
+                            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#eef5e7] px-2.5 py-1 text-[8px] font-bold text-[#315d32] sm:text-[10px]">
+                              <Boxes className="h-3 w-3" />
+                              {variants.length}{" "}
+                              {variants.length === 1 ? "pack size" : "pack sizes"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="grid shrink-0 grid-cols-3 gap-1.5 border-t border-[#edf1e9] pt-2.5 sm:gap-2 sm:pt-3 lg:flex lg:items-center lg:border-0 lg:pt-0">
+                          <ActionButton
+                            icon={Eye}
+                            label="View"
+                            loading={viewLoadingId === product.id}
+                            onClick={() => openViewModal(product)}
+                          />
+
+                          <ActionButton
+                            icon={Pencil}
+                            label="Edit"
+                            loading={editLoadingId === product.id}
+                            onClick={() => openEditModal(product)}
+                          />
+
+                          <ActionButton
+                            icon={Trash2}
+                            label="Delete"
+                            danger
+                            loading={deletingId === product.id}
+                            onClick={() => setConfirmDeleteProduct(product)}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Variants */}
+                      <div className="mt-3 overflow-hidden rounded-xl border border-[#edf1e9] bg-[#f7f8f2] sm:mt-4 sm:rounded-2xl">
+                        <div className="flex items-center justify-between gap-2 border-b border-[#edf1e9] px-3 py-2.5 sm:px-4 sm:py-3">
+                          <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-[#92998e] sm:text-[9px]">
+                            Pack sizes
                           </p>
 
-                          <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#eef5e7] px-2.5 py-1 text-[8px] font-bold text-[#315d32] sm:text-[10px]">
-                            <Boxes className="h-3 w-3" />
-                            {variants.length}{" "}
-                            {variants.length === 1 ? "pack size" : "pack sizes"}
-                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setVariantModal({
+                                productId: product.id,
+                                productName: product.name,
+                              })
+                            }
+                            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#dceacb] bg-white px-2.5 text-[9px] font-bold text-[#315d32] transition hover:border-[#315d32] hover:bg-[#eef5e7] sm:text-[11px]"
+                          >
+                            <Plus size={12} />
+                            Add pack size
+                          </button>
                         </div>
-                      </div>
 
-                      <div className="grid shrink-0 grid-cols-3 gap-1.5 border-t border-[#edf1e9] pt-2.5 sm:gap-2 sm:pt-3 lg:flex lg:items-center lg:border-0 lg:pt-0">
-                        <ActionButton
-                          icon={Eye}
-                          label="View"
-                          loading={viewLoadingId === product.id}
-                          onClick={() => openViewModal(product)}
-                        />
+                        {variants.length === 0 ? (
+                          <p className="px-4 py-6 text-center text-[11px] font-semibold text-[#92998e] sm:text-xs">
+                            No pack sizes yet.
+                          </p>
+                        ) : (
+                          <>
+                            {/* Desktop table */}
+                            <div className="hidden overflow-x-auto bg-white md:block">
+                              <table className="w-full min-w-[720px] border-collapse">
+                                <thead>
+                                  <tr>
+                                    {[
+                                      "SKU",
+                                      "Pack",
+                                      "MRP",
+                                      "Price",
+                                      "Stock",
+                                      "Actions",
+                                    ].map((heading, index) => (
+                                      <th
+                                        key={heading}
+                                        className={`border-b border-[#edf1e9] px-4 py-3 text-[9px] font-bold uppercase tracking-wider text-[#92998e] ${index === 5 ? "text-right" : "text-left"
+                                          }`}
+                                      >
+                                        {heading}
+                                      </th>
+                                    ))}
+                                  </tr>
+                                </thead>
 
-                        <ActionButton
-                          icon={Pencil}
-                          label="Edit"
-                          loading={editLoadingId === product.id}
-                          onClick={() => openEditModal(product)}
-                        />
+                                <tbody>
+                                  {variants.map((variant) => {
+                                    const stockStatus = getStockStatus(variant);
+                                    const variantActive =
+                                      variant.isActive !== undefined
+                                        ? variant.isActive
+                                        : true;
 
-                        <ActionButton
-                          icon={Trash2}
-                          label="Delete"
-                          danger
-                          loading={deletingId === product.id}
-                          onClick={() => setConfirmDeleteProduct(product)}
-                        />
-                      </div>
-                    </div>
+                                    return (
+                                      <tr
+                                        key={variant.id}
+                                        className="border-b border-[#edf1e9] transition-colors last:border-0 hover:bg-[#f7f8f2]"
+                                      >
+                                        <td className="px-4 py-3.5 text-xs font-bold text-[#202a20]">
+                                          <div className="flex items-center gap-2">
+                                            <span>{variant.sku}</span>
 
-                    {/* Variants */}
-                    <div className="mt-3 overflow-hidden rounded-xl border border-[#edf1e9] bg-[#f7f8f2] sm:mt-4 sm:rounded-2xl">
-                      <div className="flex items-center justify-between gap-2 border-b border-[#edf1e9] px-3 py-2.5 sm:px-4 sm:py-3">
-                        <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-[#92998e] sm:text-[9px]">
-                          Pack sizes
-                        </p>
+                                            {!variantActive && (
+                                              <StatusBadge tone="neutral">
+                                                Inactive
+                                              </StatusBadge>
+                                            )}
+                                          </div>
+                                        </td>
 
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setVariantModal({
-                              productId: product.id,
-                              productName: product.name,
-                            })
-                          }
-                          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#dceacb] bg-white px-2.5 text-[9px] font-bold text-[#315d32] transition hover:border-[#315d32] hover:bg-[#eef5e7] sm:text-[11px]"
-                        >
-                          <Plus size={12} />
-                          Add pack size
-                        </button>
-                      </div>
+                                        <td className="px-4 py-3.5 text-xs text-[#667065]">
+                                          {variant.weight} {variant.unit}
+                                        </td>
 
-                      {variants.length === 0 ? (
-                        <p className="px-4 py-6 text-center text-[11px] font-semibold text-[#92998e] sm:text-xs">
-                          No pack sizes yet.
-                        </p>
-                      ) : (
-                        <>
-                          {/* Desktop table */}
-                          <div className="hidden overflow-x-auto bg-white md:block">
-                            <table className="w-full min-w-[720px] border-collapse">
-                              <thead>
-                                <tr>
-                                  {[
-                                    "SKU",
-                                    "Pack",
-                                    "MRP",
-                                    "Price",
-                                    "Stock",
-                                    "Actions",
-                                  ].map((heading, index) => (
-                                    <th
-                                      key={heading}
-                                      className={`border-b border-[#edf1e9] px-4 py-3 text-[9px] font-bold uppercase tracking-wider text-[#92998e] ${index === 5 ? "text-right" : "text-left"
-                                        }`}
-                                    >
-                                      {heading}
-                                    </th>
-                                  ))}
-                                </tr>
-                              </thead>
+                                        <td className="px-4 py-3.5 text-xs font-semibold text-[#667065]">
+                                          {money(variant.mrp)}
+                                        </td>
 
-                              <tbody>
-                                {variants.map((variant) => {
-                                  const stockStatus = getStockStatus(variant);
-                                  const variantActive =
-                                    variant.isActive !== undefined
-                                      ? variant.isActive
-                                      : true;
+                                        <td className="px-4 py-3.5 text-xs font-black text-[#315d32]">
+                                          {money(variantPrice(variant))}
+                                        </td>
 
-                                  return (
-                                    <tr
-                                      key={variant.id}
-                                      className="border-b border-[#edf1e9] transition-colors last:border-0 hover:bg-[#f7f8f2]"
-                                    >
-                                      <td className="px-4 py-3.5 text-xs font-bold text-[#202a20]">
-                                        <div className="flex items-center gap-2">
-                                          <span>{variant.sku}</span>
+                                        <td className="px-4 py-3.5">
+                                          <StatusBadge tone={stockStatus.tone}>
+                                            {stockStatus.text}
+                                          </StatusBadge>
+                                        </td>
 
-                                          {!variantActive && (
-                                            <StatusBadge tone="neutral">
-                                              Inactive
-                                            </StatusBadge>
-                                          )}
+                                        <td className="px-4 py-3.5">
+                                          <div className="flex items-center justify-end gap-1.5">
+                                            <MiniAction
+                                              icon={Pencil}
+                                              label="Edit"
+                                              onClick={() =>
+                                                setEditVariantModal({
+                                                  productId: product.id,
+                                                  variant,
+                                                  productName: product.name,
+                                                })
+                                              }
+                                            />
+
+                                            <MiniAction
+                                              icon={PackagePlus}
+                                              label="Stock"
+                                              onClick={() =>
+                                                setStockModal({
+                                                  productId: product.id,
+                                                  variant,
+                                                  productName: product.name,
+                                                })
+                                              }
+                                            />
+
+                                            <MiniAction
+                                              icon={Power}
+                                              label={
+                                                variantActive
+                                                  ? "Deactivate"
+                                                  : "Activate"
+                                              }
+                                              onClick={() =>
+                                                handleVariantUpdate(
+                                                  product.id,
+                                                  variant.id,
+                                                  { isActive: !variantActive }
+                                                )
+                                              }
+                                            />
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+
+                            {/* Mobile cards */}
+                            <div className="space-y-2 p-2 md:hidden">
+                              {variants.map((variant) => {
+                                const stockStatus = getStockStatus(variant);
+                                const variantActive =
+                                  variant.isActive !== undefined
+                                    ? variant.isActive
+                                    : true;
+
+                                return (
+                                  <div
+                                    key={variant.id}
+                                    className="rounded-xl border border-[#edf1e9] bg-white p-3"
+                                  >
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="min-w-0">
+                                        <p className="truncate text-xs font-black text-[#202a20]">
+                                          {variant.sku}
+                                        </p>
+
+                                        <p className="mt-0.5 text-[10px] text-[#92998e]">
+                                          {variant.weight} {variant.unit}
+                                        </p>
+                                      </div>
+
+                                      <StatusBadge
+                                        tone={variantActive ? "brand" : "neutral"}
+                                      >
+                                        {variantActive ? "Active" : "Inactive"}
+                                      </StatusBadge>
+                                    </div>
+
+                                    <div className="mt-2.5 grid grid-cols-3 gap-2 rounded-lg bg-[#f7f8f2] p-2.5">
+                                      <div className="min-w-0">
+                                        <p className="text-[7px] font-bold uppercase tracking-wider text-[#92998e]">
+                                          MRP
+                                        </p>
+
+                                        <p className="mt-1 truncate text-[11px] font-black text-[#202a20]">
+                                          {money(variant.mrp)}
+                                        </p>
+                                      </div>
+
+                                      <div className="min-w-0">
+                                        <p className="text-[7px] font-bold uppercase tracking-wider text-[#92998e]">
+                                          Price
+                                        </p>
+
+                                        <p className="mt-1 truncate text-[11px] font-black text-[#315d32]">
+                                          {money(variantPrice(variant))}
+                                        </p>
+                                      </div>
+
+                                      <div className="flex min-w-0 flex-col items-end">
+                                        <p className="text-[7px] font-bold uppercase tracking-wider text-[#92998e]">
+                                          Stock
+                                        </p>
+
+                                        <div className="mt-1">
+                                          <StatusBadge tone={stockStatus.tone}>
+                                            {stockStatus.text}
+                                          </StatusBadge>
                                         </div>
-                                      </td>
-
-                                      <td className="px-4 py-3.5 text-xs text-[#667065]">
-                                        {variant.weight} {variant.unit}
-                                      </td>
-
-                                      <td className="px-4 py-3.5 text-xs font-semibold text-[#667065]">
-                                        {money(variant.mrp)}
-                                      </td>
-
-                                      <td className="px-4 py-3.5 text-xs font-black text-[#315d32]">
-                                        {money(variantPrice(variant))}
-                                      </td>
-
-                                      <td className="px-4 py-3.5">
-                                        <StatusBadge tone={stockStatus.tone}>
-                                          {stockStatus.text}
-                                        </StatusBadge>
-                                      </td>
-
-                                      <td className="px-4 py-3.5">
-                                        <div className="flex items-center justify-end gap-1.5">
-                                          <MiniAction
-                                            icon={Pencil}
-                                            label="Edit"
-                                            onClick={() =>
-                                              setEditVariantModal({
-                                                productId: product.id,
-                                                variant,
-                                                productName: product.name,
-                                              })
-                                            }
-                                          />
-
-                                          <MiniAction
-                                            icon={PackagePlus}
-                                            label="Stock"
-                                            onClick={() =>
-                                              setStockModal({
-                                                productId: product.id,
-                                                variant,
-                                                productName: product.name,
-                                              })
-                                            }
-                                          />
-
-                                          <MiniAction
-                                            icon={Power}
-                                            label={
-                                              variantActive
-                                                ? "Deactivate"
-                                                : "Activate"
-                                            }
-                                            onClick={() =>
-                                              handleVariantUpdate(
-                                                product.id,
-                                                variant.id,
-                                                { isActive: !variantActive }
-                                              )
-                                            }
-                                          />
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </table>
-                          </div>
-
-                          {/* Mobile cards */}
-                          <div className="space-y-2 p-2 md:hidden">
-                            {variants.map((variant) => {
-                              const stockStatus = getStockStatus(variant);
-                              const variantActive =
-                                variant.isActive !== undefined
-                                  ? variant.isActive
-                                  : true;
-
-                              return (
-                                <div
-                                  key={variant.id}
-                                  className="rounded-xl border border-[#edf1e9] bg-white p-3"
-                                >
-                                  <div className="flex items-start justify-between gap-2">
-                                    <div className="min-w-0">
-                                      <p className="truncate text-xs font-black text-[#202a20]">
-                                        {variant.sku}
-                                      </p>
-
-                                      <p className="mt-0.5 text-[10px] text-[#92998e]">
-                                        {variant.weight} {variant.unit}
-                                      </p>
-                                    </div>
-
-                                    <StatusBadge
-                                      tone={variantActive ? "brand" : "neutral"}
-                                    >
-                                      {variantActive ? "Active" : "Inactive"}
-                                    </StatusBadge>
-                                  </div>
-
-                                  <div className="mt-2.5 grid grid-cols-3 gap-2 rounded-lg bg-[#f7f8f2] p-2.5">
-                                    <div className="min-w-0">
-                                      <p className="text-[7px] font-bold uppercase tracking-wider text-[#92998e]">
-                                        MRP
-                                      </p>
-
-                                      <p className="mt-1 truncate text-[11px] font-black text-[#202a20]">
-                                        {money(variant.mrp)}
-                                      </p>
-                                    </div>
-
-                                    <div className="min-w-0">
-                                      <p className="text-[7px] font-bold uppercase tracking-wider text-[#92998e]">
-                                        Price
-                                      </p>
-
-                                      <p className="mt-1 truncate text-[11px] font-black text-[#315d32]">
-                                        {money(variantPrice(variant))}
-                                      </p>
-                                    </div>
-
-                                    <div className="flex min-w-0 flex-col items-end">
-                                      <p className="text-[7px] font-bold uppercase tracking-wider text-[#92998e]">
-                                        Stock
-                                      </p>
-
-                                      <div className="mt-1">
-                                        <StatusBadge tone={stockStatus.tone}>
-                                          {stockStatus.text}
-                                        </StatusBadge>
                                       </div>
                                     </div>
+
+                                    <div className="mt-2.5 grid grid-cols-3 gap-1.5">
+                                      <MobileAction
+                                        icon={Pencil}
+                                        label="Edit"
+                                        onClick={() =>
+                                          setEditVariantModal({
+                                            productId: product.id,
+                                            variant,
+                                            productName: product.name,
+                                          })
+                                        }
+                                      />
+
+                                      <MobileAction
+                                        icon={PackagePlus}
+                                        label="Stock"
+                                        onClick={() =>
+                                          setStockModal({
+                                            productId: product.id,
+                                            variant,
+                                            productName: product.name,
+                                          })
+                                        }
+                                      />
+
+                                      <MobileAction
+                                        icon={Power}
+                                        label={variantActive ? "Disable" : "Enable"}
+                                        onClick={() =>
+                                          handleVariantUpdate(
+                                            product.id,
+                                            variant.id,
+                                            { isActive: !variantActive }
+                                          )
+                                        }
+                                      />
+                                    </div>
                                   </div>
-
-                                  <div className="mt-2.5 grid grid-cols-3 gap-1.5">
-                                    <MobileAction
-                                      icon={Pencil}
-                                      label="Edit"
-                                      onClick={() =>
-                                        setEditVariantModal({
-                                          productId: product.id,
-                                          variant,
-                                          productName: product.name,
-                                        })
-                                      }
-                                    />
-
-                                    <MobileAction
-                                      icon={PackagePlus}
-                                      label="Stock"
-                                      onClick={() =>
-                                        setStockModal({
-                                          productId: product.id,
-                                          variant,
-                                          productName: product.name,
-                                        })
-                                      }
-                                    />
-
-                                    <MobileAction
-                                      icon={Power}
-                                      label={variantActive ? "Disable" : "Enable"}
-                                      onClick={() =>
-                                        handleVariantUpdate(
-                                          product.id,
-                                          variant.id,
-                                          { isActive: !variantActive }
-                                        )
-                                      }
-                                    />
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </>
-                      )}
+                                );
+                              })}
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-          {!loading && totalPages > 1 && (
-  <div className="flex flex-col items-center justify-between gap-3 rounded-[16px] border border-[#dceacb] bg-white px-4 py-3 sm:flex-row">
-    <p className="text-[10px] font-semibold text-[#92998e] sm:text-xs">
-      Page {currentPage} of {totalPages} · {totalProducts} products
-    </p>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+            {!loading && totalPages > 1 && (
+              <div className="flex flex-col items-center justify-between gap-3 rounded-[16px] border border-[#dceacb] bg-white px-4 py-3 sm:flex-row">
+                <p className="text-[10px] font-semibold text-[#92998e] sm:text-xs">
+                  Page {currentPage} of {totalPages} · {totalProducts} products
+                </p>
 
-    <div className="flex items-center gap-1.5">
-      <button
-        type="button"
-        disabled={currentPage === 1}
-        onClick={() => setCurrentPage((p) => p - 1)}
-        className="h-9 rounded-xl border border-[#dceacb] bg-white px-3 text-xs font-bold text-[#667065] transition hover:border-[#315d32] hover:bg-[#eef5e7] disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        Prev
-      </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                    className="h-9 rounded-xl border border-[#dceacb] bg-white px-3 text-xs font-bold text-[#667065] transition hover:border-[#315d32] hover:bg-[#eef5e7] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Prev
+                  </button>
 
-      <span className="px-2 text-xs font-bold text-[#315d32]">
-        {currentPage} / {totalPages}
-      </span>
+                  <span className="px-2 text-xs font-bold text-[#315d32]">
+                    {currentPage} / {totalPages}
+                  </span>
 
-      <button
-        type="button"
-        disabled={currentPage === totalPages}
-        onClick={() => setCurrentPage((p) => p + 1)}
-        className="h-9 rounded-xl border border-[#dceacb] bg-white px-3 text-xs font-bold text-[#667065] transition hover:border-[#315d32] hover:bg-[#eef5e7] disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        Next
-      </button>
-    </div>
-  </div>
-          )}
+                  <button
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                    className="h-9 rounded-xl border border-[#dceacb] bg-white px-3 text-xs font-bold text-[#667065] transition hover:border-[#315d32] hover:bg-[#eef5e7] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -1194,8 +1194,9 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
   const isEdit = !!product;
   const fileInputRef = useRef(null);
   const csvInputRef = useRef(null);
-
-  const [mode, setMode] = useState("single"); // "single" | "bulk"
+  const cameraInputRef = useRef(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [mode, setMode] = useState("single");
 
   const [form, setForm] = useState({
     name: "",
@@ -1318,7 +1319,19 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
       })),
     ]);
   };
-
+  const addCapturedPhoto = (file) => {
+    setError("");
+    setImages((prev) => [
+      ...prev,
+      {
+        id: nextTempId(),
+        url: "",
+        previewUrl: URL.createObjectURL(file),
+        file,
+        isExisting: false,
+      },
+    ]);
+  };
   const removeImage = (imageId) =>
     setImages((prev) => prev.filter((image) => image.id !== imageId));
 
@@ -1538,8 +1551,8 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
               type="button"
               onClick={() => setMode(value)}
               className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-lg px-2 text-[10px] font-bold transition sm:text-xs ${mode === value
-                  ? "bg-[#315d32] text-white shadow-[0_6px_18px_rgba(49,93,50,0.18)]"
-                  : "text-[#667065] hover:bg-white"
+                ? "bg-[#315d32] text-white shadow-[0_6px_18px_rgba(49,93,50,0.18)]"
+                : "text-[#667065] hover:bg-white"
                 }`}
             >
               <Icon size={14} />
@@ -1794,13 +1807,24 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
                 </div>
               ))}
 
+              {/* Gallery se upload */}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[#dceacb] bg-white text-[10px] font-bold text-[#92998e] transition hover:border-[#315d32] hover:text-[#315d32]"
               >
                 <ImagePlus className="h-5 w-5" />
-                Add photo
+                Gallery
+              </button>
+
+              {/* 👈 NEW: Camera se photo */}
+              <button
+                type="button"
+                onClick={() => setCameraOpen(true)}
+                className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[#dceacb] bg-white text-[10px] font-bold text-[#92998e] transition hover:border-[#315d32] hover:text-[#315d32]"
+              >
+                <Camera className="h-5 w-5" />
+                Camera
               </button>
 
               <input
@@ -1808,6 +1832,16 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 multiple
+                onChange={handleImagesChange}
+                className="hidden"
+              />
+
+              {/* 👈 NEW: fallback, phone ka native camera */}
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
                 onChange={handleImagesChange}
                 className="hidden"
               />
@@ -1990,8 +2024,8 @@ function ProductDetailModal({ product, getStockStatus, onClose, onEdit }) {
                   type="button"
                   onClick={() => setActiveImage(index)}
                   className={`h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 transition ${index === activeImage
-                      ? "border-[#315d32]"
-                      : "border-[#dceacb] opacity-80 hover:opacity-100"
+                    ? "border-[#315d32]"
+                    : "border-[#dceacb] opacity-80 hover:opacity-100"
                     }`}
                 >
                   <img
@@ -2226,30 +2260,42 @@ function AddVariantModal({ productName, onClose, onSave }) {
   };
 
   return (
-    <ModalShell
-      eyebrow="New pack size"
-      title="Add pack size"
-      subtitle={productName}
-      onClose={() => !loading && onClose()}
-      footer={
-        <>
-          <ModalButton onClick={onClose} disabled={loading}>
-            Cancel
-          </ModalButton>
+    <>
+      <ModalShell
+        eyebrow="New pack size"
+        title="Add pack size"
+        subtitle={productName}
+        onClose={() => !loading && onClose()}
+        footer={
+          <>
+            <ModalButton onClick={onClose} disabled={loading}>
+              Cancel
+            </ModalButton>
 
-          <ModalButton primary type="submit" form="add-variant-form" disabled={loading}>
-            {loading && <Loader2 size={14} className="animate-spin" />}
-            {loading ? "Adding..." : "Add pack size"}
-          </ModalButton>
-        </>
-      }
-    >
-      <form id="add-variant-form" onSubmit={submit} className="space-y-3.5 sm:space-y-4">
-        {error && <ErrorBox>{error}</ErrorBox>}
+            <ModalButton primary type="submit" form="add-variant-form" disabled={loading}>
+              {loading && <Loader2 size={14} className="animate-spin" />}
+              {loading ? "Adding..." : "Add pack size"}
+            </ModalButton>
+          </>
+        }
+      >
+        <form id="add-variant-form" onSubmit={submit} className="space-y-3.5 sm:space-y-4">
+          {error && <ErrorBox>{error}</ErrorBox>}
 
-        <VariantFields form={form} update={update} />
-      </form>
-    </ModalShell>
+          <VariantFields form={form} update={update} />
+        </form>
+      </ModalShell>
+      {cameraOpen && (
+        <CameraCaptureModal
+          onClose={() => setCameraOpen(false)}
+          onCapture={addCapturedPhoto}
+          onFallback={() => {
+            setCameraOpen(false);
+            cameraInputRef.current?.click();
+          }}
+        />
+      )}
+    </>
   );
 }
 
@@ -2514,7 +2560,199 @@ function ReceiveStockModal({ productName, variant, currentStock, onClose, onSave
     </ModalShell>
   );
 }
+/* =========================================================
+   CAMERA CAPTURE MODAL
+========================================================= */
 
+function CameraCaptureModal({ onClose, onCapture, onFallback }) {
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+
+  const [facingMode, setFacingMode] = useState("environment");
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState("");
+  const [shot, setShot] = useState(null); // { blob, url }
+
+  const stopStream = () => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const start = async () => {
+      stopStream();
+      setReady(false);
+      setError("");
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setError("Camera is not available here. It needs HTTPS and a supported browser.");
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: facingMode },
+            width: { ideal: 1280 },
+            height: { ideal: 960 },
+          },
+          audio: false,
+        });
+
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+
+        streamRef.current = stream;
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+        }
+
+        setReady(true);
+      } catch (err) {
+        if (err?.name === "NotAllowedError") {
+          setError("Camera permission was denied. Allow camera access in your browser settings.");
+        } else if (err?.name === "NotFoundError") {
+          setError("No camera found on this device.");
+        } else {
+          setError("Could not open the camera.");
+        }
+      }
+    };
+
+    start();
+
+    return () => {
+      cancelled = true;
+      stopStream();
+    };
+  }, [facingMode]);
+
+  // modal band hone par preview URL free karo
+  useEffect(() => {
+    return () => {
+      if (shot?.url) URL.revokeObjectURL(shot.url);
+    };
+  }, [shot]);
+
+  const capture = () => {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return;
+        setShot({ blob, url: URL.createObjectURL(blob) });
+      },
+      "image/jpeg",
+      0.9
+    );
+  };
+
+  const usePhoto = () => {
+    if (!shot) return;
+    const file = new File([shot.blob], `camera-${Date.now()}.jpg`, {
+      type: "image/jpeg",
+    });
+    onCapture(file);
+    onClose();
+  };
+
+  return (
+    <ModalShell
+      eyebrow="Product photo"
+      title="Take photo"
+      subtitle={shot ? "Check the photo, then use it or retake." : "Point the camera and tap Capture."}
+      size="md"
+      onClose={onClose}
+      footer={
+        shot ? (
+          <>
+            <ModalButton onClick={() => setShot(null)}>
+              <RefreshCw size={13} />
+              Retake
+            </ModalButton>
+
+            <ModalButton primary onClick={usePhoto}>
+              <Check size={14} />
+              Use photo
+            </ModalButton>
+          </>
+        ) : (
+          <>
+            <ModalButton onClick={onClose}>Cancel</ModalButton>
+
+            <ModalButton
+              onClick={() =>
+                setFacingMode((m) => (m === "environment" ? "user" : "environment"))
+              }
+              disabled={!ready}
+            >
+              <RefreshCw size={13} />
+              Switch camera
+            </ModalButton>
+
+            <ModalButton primary onClick={capture} disabled={!ready}>
+              <Camera size={14} />
+              Capture
+            </ModalButton>
+          </>
+        )
+      }
+    >
+      {error && (
+        <div className="space-y-3">
+          <ErrorBox>{error}</ErrorBox>
+
+          {onFallback && (
+            <ModalButton onClick={onFallback}>
+              Open phone camera app instead
+            </ModalButton>
+          )}
+        </div>
+      )}
+
+      <div
+        className={`relative overflow-hidden rounded-xl border border-[#dceacb] bg-black ${
+          error ? "hidden" : ""
+        }`}
+      >
+        {/* live video, hamesha mounted rehta hai */}
+        <video
+          ref={videoRef}
+          playsInline
+          muted
+          className="aspect-[4/3] w-full object-cover"
+        />
+
+        {/* capture ke baad preview upar dikhta hai */}
+        {shot && (
+          <img
+            src={shot.url}
+            alt="Captured preview"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
+
+        {!ready && !shot && (
+          <div className="absolute inset-0 flex items-center justify-center text-white/80">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </div>
+        )}
+      </div>
+    </ModalShell>
+  );
+}
 /* =========================================================
    SHARED UI PIECES
 ========================================================= */
@@ -2541,8 +2779,8 @@ function StatCard({ label, value, description, icon: Icon, danger = false }) {
 
         <div
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-300 sm:h-11 sm:w-11 ${danger
-              ? "bg-[#f8ecea] text-[#b35a54] group-hover:bg-[#b35a54] group-hover:text-white"
-              : "bg-[#eef5e7] text-[#315d32] group-hover:bg-[#315d32] group-hover:text-white"
+            ? "bg-[#f8ecea] text-[#b35a54] group-hover:bg-[#b35a54] group-hover:text-white"
+            : "bg-[#eef5e7] text-[#315d32] group-hover:bg-[#315d32] group-hover:text-white"
             }`}
         >
           <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -2574,8 +2812,8 @@ function ActionButton({ icon: Icon, label, onClick, danger = false, loading = fa
       onClick={onClick}
       disabled={loading}
       className={`inline-flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-xl border px-3 text-[10px] font-bold transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 sm:text-xs ${danger
-          ? "border-[#efd3d0] bg-[#fff8f7] text-[#b35a54] hover:border-[#b35a54] hover:bg-[#f8ecea]"
-          : "border-[#dceacb] bg-white text-[#667065] hover:border-[#315d32] hover:bg-[#eef5e7] hover:text-[#315d32]"
+        ? "border-[#efd3d0] bg-[#fff8f7] text-[#b35a54] hover:border-[#b35a54] hover:bg-[#f8ecea]"
+        : "border-[#dceacb] bg-white text-[#667065] hover:border-[#315d32] hover:bg-[#eef5e7] hover:text-[#315d32]"
         }`}
     >
       {loading ? (
@@ -2738,8 +2976,8 @@ function Select({ children, value, onChange, required, disabled }) {
                 type="button"
                 onClick={() => choose(option)}
                 className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold transition sm:text-sm ${isSelected
-                    ? "bg-[#eef5e7] text-[#315d32]"
-                    : "text-[#202a20] hover:bg-[#eef5e7] hover:text-[#315d32]"
+                  ? "bg-[#eef5e7] text-[#315d32]"
+                  : "text-[#202a20] hover:bg-[#eef5e7] hover:text-[#315d32]"
                   }`}
               >
                 <span className="truncate">{option.label}</span>
