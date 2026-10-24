@@ -64,7 +64,41 @@ const UNIT_OPTIONS = ["G", "KG", "ML", "L", "PCS"];
 
 let tempImageId = 0;
 const nextTempId = () => `temp-${Date.now()}-${tempImageId++}`;
+const compressImage = (file, maxSide = 1280, quality = 0.8) =>
+  new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
 
+    img.onload = () => {
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(
+        (blob) => {
+          URL.revokeObjectURL(url);
+          resolve(
+            blob
+              ? new File([blob], file.name.replace(/\.\w+$/, "") + ".jpg", {
+                  type: "image/jpeg",
+                })
+              : file
+          );
+        },
+        "image/jpeg",
+        quality
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+
+    img.src = url;
+  });
 const slugify = (value) =>
   value
     .toString()
@@ -1203,7 +1237,7 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
   const isEdit = !!product;
   const fileInputRef = useRef(null);
   const csvInputRef = useRef(null);
-  const cameraInputRef = useRef(null);            // 👈 NEW (mobile fallback)
+  const cameraInputRef = useRef(null);          
   const [cameraOpen, setCameraOpen] = useState(false);
 
   const [mode, setMode] = useState("single"); // "single" | "bulk"
@@ -1311,12 +1345,14 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
     update("slug", value);
   };
 
-  const handleImagesChange = (e) => {
-    const files = Array.from(e.target.files || []);
+   const handleImagesChange = async (e) => {
+    const picked = Array.from(e.target.files || []);
     e.target.value = "";
-    if (!files.length) return;
+    if (!picked.length) return;
 
     setError("");
+
+    const files = await Promise.all(picked.map((f) => compressImage(f)));
 
     setImages((prev) => [
       ...prev,
@@ -1329,15 +1365,16 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
       })),
     ]);
   };
-  const addCapturedPhoto = (file) => {
+   const addCapturedPhoto = async (file) => {
     setError("");
+    const small = await compressImage(file);
     setImages((prev) => [
       ...prev,
       {
         id: nextTempId(),
         url: "",
-        previewUrl: URL.createObjectURL(file),
-        file,
+        previewUrl: URL.createObjectURL(small),
+        file: small,
         isExisting: false,
       },
     ]);
@@ -2681,6 +2718,28 @@ function CameraCaptureModal({ onClose, onCapture, onFallback }) {
     onClose();
   };
 
+    // TEMP: desktop testing ke liye white image (baad mein hata dena)
+  const useTestImage = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1280;
+    canvas.height = 960;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return;
+        const file = new File([blob], `test-white-${Date.now()}.jpg`, {
+          type: "image/jpeg",
+        });
+        onCapture(file);
+        onClose();
+      },
+      "image/jpeg",
+      0.9
+    );
+  };
   return (
     <ModalShell
       eyebrow="Product photo"
@@ -2723,7 +2782,7 @@ function CameraCaptureModal({ onClose, onCapture, onFallback }) {
         )
       }
     >
-      {error && (
+           {error && (
         <div className="space-y-3">
           <ErrorBox>{error}</ErrorBox>
 
@@ -2732,9 +2791,13 @@ function CameraCaptureModal({ onClose, onCapture, onFallback }) {
               Open phone camera app instead
             </ModalButton>
           )}
+
+          {/* TEMP: desktop testing ke liye, baad mein hata dena */}
+          <ModalButton onClick={useTestImage}>
+            Use white test image
+          </ModalButton>
         </div>
       )}
-
       <div
         className={`relative overflow-hidden rounded-xl border border-[#dceacb] bg-black ${error ? "hidden" : ""
           }`}
