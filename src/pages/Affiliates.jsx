@@ -16,7 +16,6 @@ import {
   Ban,
   RotateCcw,
   SlidersHorizontal,
-  ChevronRight,
   X,
   Loader2,
   AlertTriangle,
@@ -33,6 +32,10 @@ import {
   createAffiliateAdjustment,
   getAffiliateReconciliation,
 } from "../api/affiliateApis";
+import {
+  updateGlobalCommission,
+} from "../api/Affiliatecommissioncontroller";
+
 
 const STATUS_STYLE = {
   PENDING: "bg-[#fff4dc] text-[#a66b00]",
@@ -186,6 +189,7 @@ export default function Affiliates() {
   const [adjustReason, setAdjustReason] = useState("");
   const [adjustSaving, setAdjustSaving] = useState(false);
 
+  const [globalCommission, setGlobalCommission] = useState(null);
   const loadData = async () => {
     try {
       setLoading(true);
@@ -206,8 +210,27 @@ export default function Affiliates() {
           getAffiliateReconciliation(),
         ]);
 
-      setAffiliates(normalizeList(affiliateResponse));
-      setStats(normalizeObject(statsResponse));
+      const affiliateList = normalizeList(affiliateResponse);
+      const statsData = normalizeObject(statsResponse);
+
+      // reload par global rate lene ke liye
+      let globalRate;
+      const firstId = getId(affiliateList[0]);
+      if (firstId) {
+        try {
+          const detailResponse = await getAffiliate(firstId);
+          const detail = detailResponse?.data || detailResponse;
+          globalRate = detail?.globalCommissionRate;
+        } catch {
+          // ignore
+        }
+      }
+
+      setAffiliates(affiliateList);
+      setStats({
+        ...statsData,
+        ...(globalRate !== undefined ? { globalCommissionRate: globalRate } : {}),
+      });
       setPayouts(normalizeList(payoutResponse));
       setReconciliation(
         reconciliationResponse?.data || reconciliationResponse || null
@@ -220,7 +243,6 @@ export default function Affiliates() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     loadData();
   }, [statusFilter, channelFilter, rangeFilter]);
@@ -302,6 +324,13 @@ export default function Affiliates() {
     stats?.revenue30d ??
     0;
 
+  const commissionPercentage =
+    globalCommission ??
+    stats?.globalCommissionRate ??
+    stats?.commissionPercentage ??
+    stats?.commissionRate ??
+    stats?.commissionPercent ??
+    0;
   const openReview = (affiliate, action) => {
     setReviewAffiliate(affiliate);
     setReviewAction(action);
@@ -337,8 +366,8 @@ export default function Affiliates() {
         const data = response?.data || response || {};
         setApprovedCode(
           data?.referralCode ||
-            data?.affiliate?.referralCode ||
-            getReferralCode(reviewAffiliate)
+          data?.affiliate?.referralCode ||
+          getReferralCode(reviewAffiliate)
         );
       } else {
         setReviewOpen(false);
@@ -519,9 +548,8 @@ export default function Affiliates() {
               className="inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 text-[9px] font-bold text-white backdrop-blur transition hover:bg-white/20 sm:min-h-10 sm:w-auto sm:text-xs"
             >
               <RefreshCw
-                className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
-                  refreshing ? "animate-spin" : ""
-                }`}
+                className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${refreshing ? "animate-spin" : ""
+                  }`}
               />
               Refresh
             </motion.button>
@@ -559,8 +587,34 @@ export default function Affiliates() {
             value={formatMoney(attributedRevenue)}
             icon={TrendingUp}
           />
-        </motion.div>
 
+        </motion.div>
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <GlobalCommissionCard
+            percentage={commissionPercentage}
+            
+            onSave={async (value) => {
+              const response = await updateGlobalCommission({
+                commissionRate: value,
+              });
+
+            
+
+              const data = response?.data?.data || response?.data || response;
+
+              const newRate =
+                data?.globalCommissionRate ??
+                data?.commissionRate ??
+                data?.commissionPercentage ??
+                data?.rate ??
+                value; // agar response mein kuch na mile to jo user ne dala wahi
+
+              setGlobalCommission(Number(newRate));
+
+              return response;
+            }}
+          />
+        </div>
         {error && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -600,11 +654,10 @@ export default function Affiliates() {
                 key={value}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => setActiveTab(value)}
-                className={`shrink-0 rounded-xl px-3 py-2 text-[8px] font-bold transition-all sm:px-3.5 sm:text-xs ${
-                  activeTab === value
-                    ? "bg-[#315d32] text-white shadow-[0_6px_18px_rgba(49,93,50,0.18)]"
-                    : "border border-[#dceacb] bg-white text-[#667065] hover:border-[#315d32] hover:bg-[#eef5e7] hover:text-[#315d32]"
-                }`}
+                className={`shrink-0 rounded-xl px-3 py-2 text-[8px] font-bold transition-all sm:px-3.5 sm:text-xs ${activeTab === value
+                  ? "bg-[#315d32] text-white shadow-[0_6px_18px_rgba(49,93,50,0.18)]"
+                  : "border border-[#dceacb] bg-white text-[#667065] hover:border-[#315d32] hover:bg-[#eef5e7] hover:text-[#315d32]"
+                  }`}
               >
                 {label}
               </motion.button>
@@ -754,8 +807,8 @@ export default function Affiliates() {
                   {reviewSaving
                     ? "Saving..."
                     : reviewAction === "APPROVED"
-                    ? "Approve affiliate"
-                    : "Reject application"}
+                      ? "Approve affiliate"
+                      : "Reject application"}
                 </ModalButton>
               </>
             )
@@ -827,8 +880,8 @@ export default function Affiliates() {
                 {payoutSaving
                   ? "Saving..."
                   : payoutAction === "PAID"
-                  ? "Mark paid"
-                  : "Reject payout"}
+                    ? "Mark paid"
+                    : "Reject payout"}
               </ModalButton>
             </>
           }
@@ -839,22 +892,20 @@ export default function Affiliates() {
                 <button
                   type="button"
                   onClick={() => setPayoutAction("PAID")}
-                  className={`h-11 rounded-xl text-xs font-bold transition ${
-                    payoutAction === "PAID"
-                      ? "bg-[#315d32] text-white"
-                      : "border border-[#dceacb] bg-white text-[#667065]"
-                  }`}
+                  className={`h-11 rounded-xl text-xs font-bold transition ${payoutAction === "PAID"
+                    ? "bg-[#315d32] text-white"
+                    : "border border-[#dceacb] bg-white text-[#667065]"
+                    }`}
                 >
                   Mark Paid
                 </button>
                 <button
                   type="button"
                   onClick={() => setPayoutAction("REJECTED")}
-                  className={`h-11 rounded-xl text-xs font-bold transition ${
-                    payoutAction === "REJECTED"
-                      ? "bg-[#b35a54] text-white"
-                      : "border border-[#dceacb] bg-white text-[#667065]"
-                  }`}
+                  className={`h-11 rounded-xl text-xs font-bold transition ${payoutAction === "REJECTED"
+                    ? "bg-[#b35a54] text-white"
+                    : "border border-[#dceacb] bg-white text-[#667065]"
+                    }`}
                 >
                   Reject
                 </button>
@@ -1178,9 +1229,9 @@ function DataSection({ eyebrow, title, count, loading, empty, icon: Icon, childr
 function ReconciliationStrip({ reconciliation }) {
   const delta = Number(
     reconciliation?.delta ??
-      reconciliation?.difference ??
-      reconciliation?.unreconciledAmount ??
-      0
+    reconciliation?.difference ??
+    reconciliation?.unreconciledAmount ??
+    0
   );
 
   const balanced =
@@ -1191,25 +1242,22 @@ function ReconciliationStrip({ reconciliation }) {
   return (
     <motion.div
       variants={itemVariants}
-      className={`flex flex-col gap-3 rounded-[18px] border px-4 py-3 shadow-[0_8px_30px_rgba(49,93,50,0.04)] sm:flex-row sm:items-center sm:justify-between sm:rounded-[22px] sm:px-5 ${
-        balanced
-          ? "border-[#dceacb] bg-[#eef5e7]"
-          : "border-[#efd3d0] bg-[#f8ecea]"
-      }`}
+      className={`flex flex-col gap-3 rounded-[18px] border px-4 py-3 shadow-[0_8px_30px_rgba(49,93,50,0.04)] sm:flex-row sm:items-center sm:justify-between sm:rounded-[22px] sm:px-5 ${balanced
+        ? "border-[#dceacb] bg-[#eef5e7]"
+        : "border-[#efd3d0] bg-[#f8ecea]"
+        }`}
     >
       <div className="flex min-w-0 items-center gap-3">
         <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white ${
-            balanced ? "text-[#315d32]" : "text-[#b35a54]"
-          }`}
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white ${balanced ? "text-[#315d32]" : "text-[#b35a54]"
+            }`}
         >
           {balanced ? <CheckCircle2 size={17} /> : <AlertTriangle size={17} />}
         </div>
         <div className="min-w-0">
           <p
-            className={`text-xs font-black ${
-              balanced ? "text-[#315d32]" : "text-[#b35a54]"
-            }`}
+            className={`text-xs font-black ${balanced ? "text-[#315d32]" : "text-[#b35a54]"
+              }`}
           >
             {balanced ? "Balanced ✓" : "Reconciliation mismatch"}
           </p>
@@ -1321,19 +1369,18 @@ function StatusBadge({ status }) {
     normalized === "APPROVED" || normalized === "PAID"
       ? CheckCircle2
       : normalized === "REJECTED"
-      ? XCircle
-      : normalized === "SUSPENDED"
-      ? Ban
-      : Clock3;
+        ? XCircle
+        : normalized === "SUSPENDED"
+          ? Ban
+          : Clock3;
 
   const Icon = icon;
 
   return (
     <motion.span
       whileHover={{ scale: 1.05, y: -1 }}
-      className={`inline-flex max-w-full min-h-6 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-2 py-1 text-[8px] font-black sm:min-h-7 sm:gap-1.5 sm:px-2.5 sm:text-[9px] ${
-        STATUS_STYLE[normalized] || "bg-[#f7f8f2] text-[#667065]"
-      }`}
+      className={`inline-flex max-w-full min-h-6 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-2 py-1 text-[8px] font-black sm:min-h-7 sm:gap-1.5 sm:px-2.5 sm:text-[9px] ${STATUS_STYLE[normalized] || "bg-[#f7f8f2] text-[#667065]"
+        }`}
     >
       <Icon className="h-2.5 w-2.5 shrink-0 sm:h-3 sm:w-3" />
       <span className="truncate">
@@ -1348,8 +1395,8 @@ function StatCard({ label, value, icon: Icon, danger = false, tone = "green" }) 
     danger
       ? "bg-[#f8ecea] text-[#b35a54] group-hover:bg-[#b35a54] group-hover:text-white"
       : tone === "amber"
-      ? "bg-[#fff4dc] text-[#a66b00] group-hover:bg-[#a66b00] group-hover:text-white"
-      : "bg-[#eef5e7] text-[#315d32] group-hover:bg-[#315d32] group-hover:text-white";
+        ? "bg-[#fff4dc] text-[#a66b00] group-hover:bg-[#a66b00] group-hover:text-white"
+        : "bg-[#eef5e7] text-[#315d32] group-hover:bg-[#315d32] group-hover:text-white";
 
   return (
     <motion.div
@@ -1358,9 +1405,8 @@ function StatCard({ label, value, icon: Icon, danger = false, tone = "green" }) 
       className="group relative overflow-hidden rounded-[16px] border border-[#dceacb] bg-white p-3 shadow-[0_8px_30px_rgba(49,93,50,0.05)] transition-all duration-300 hover:border-[#b8df7d] hover:shadow-[0_18px_45px_rgba(49,93,50,0.12)] sm:rounded-[22px] sm:p-4 lg:p-5"
     >
       <div
-        className={`absolute bottom-0 left-0 top-0 w-1 ${
-          danger ? "bg-[#b35a54]" : tone === "amber" ? "bg-[#a66b00]" : "bg-[#315d32]"
-        } opacity-0 transition-opacity group-hover:opacity-100`}
+        className={`absolute bottom-0 left-0 top-0 w-1 ${danger ? "bg-[#b35a54]" : tone === "amber" ? "bg-[#a66b00]" : "bg-[#315d32]"
+          } opacity-0 transition-opacity group-hover:opacity-100`}
       />
 
       <div className="flex items-start justify-between gap-2">
@@ -1393,6 +1439,119 @@ function MetricBox({ label, value, icon: Icon }) {
         </p>
       </div>
       <p className="mt-1 text-sm font-black text-[#202a20]">{value}</p>
+    </div>
+  );
+}
+
+
+function GlobalCommissionCard({ percentage, onSave }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editPercentage, setEditPercentage] = useState(percentage);
+
+  useEffect(() => {
+    setEditPercentage(percentage);
+  }, [percentage]);
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    const value = Number(editPercentage);
+
+    if (!Number.isFinite(value) || value < 0 || value > 100) {
+      alert("Commission must be between 0 and 100.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      await onSave(value);
+
+      setIsEditing(false);
+    } catch (error) {
+      alert(
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update commission."
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+  return (
+    <div className="rounded-[18px] border border-[#dceacb] bg-white p-4 shadow-[0_8px_30px_rgba(49,93,50,0.06)] sm:rounded-[22px] sm:p-5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex-1">
+          <p className="text-[9px] font-bold uppercase tracking-wider text-[#92998e]">
+            Global Commission Rate
+          </p>
+
+          {isEditing ? (
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                value={editPercentage}
+                onChange={(e) => setEditPercentage(e.target.value)}
+                className="h-11 w-28 rounded-xl border border-[#dceacb] px-3 text-xl font-black text-[#315d32] outline-none focus:border-[#315d32]"
+              />
+              <span className="text-xl font-black text-[#315d32]">%</span>
+            </div>
+          ) : (
+            <p className="mt-2 text-2xl font-black text-[#315d32]">
+              {percentage}%
+            </p>
+          )}
+
+          <p className="mt-1 text-xs text-[#667065]">
+            Current rate for all affiliates
+          </p>
+        </div>
+
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eef5e7] text-[#315d32]">
+          <TrendingUp size={20} />
+        </div>
+      </div>
+
+      <div className="mt-4 flex gap-2 border-t border-[#edf1e9] pt-3">
+        {isEditing ? (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setEditPercentage(percentage);
+                setIsEditing(false);
+              }}
+              className="flex-1 rounded-xl border border-[#dceacb] px-3 py-2.5 text-xs font-bold text-[#667065]"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="flex-1 rounded-xl bg-[#315d32] px-3 py-2.5 text-xs font-bold text-white hover:bg-[#264a27] disabled:opacity-60"
+            >
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setEditPercentage(percentage);
+              setIsEditing(true);
+              
+            }}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#315d32] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#264a27]"
+          >
+            <SlidersHorizontal size={14} />
+            Edit Commission
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -1433,16 +1592,15 @@ function CopyField({ value, compact = false }) {
       await navigator.clipboard.writeText(String(value));
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1200);
-    } catch {}
+    } catch { }
   };
 
   return (
     <button
       type="button"
       onClick={handleCopy}
-      className={`group/copy flex min-w-0 items-center gap-2 rounded-xl border border-[#dceacb] bg-white text-left transition hover:border-[#315d32] hover:bg-[#eef5e7] ${
-        compact ? "h-9 px-2.5" : "mt-2 h-10 w-full px-3"
-      }`}
+      className={`group/copy flex min-w-0 items-center gap-2 rounded-xl border border-[#dceacb] bg-white text-left transition hover:border-[#315d32] hover:bg-[#eef5e7] ${compact ? "h-9 px-2.5" : "mt-2 h-10 w-full px-3"
+        }`}
       title="Copy"
     >
       <span className="min-w-0 flex-1 truncate font-mono text-[10px] font-bold text-[#315d32] sm:text-xs">
@@ -1460,11 +1618,10 @@ function MobileAction({ icon: Icon, label, onClick, danger = false }) {
     <button
       type="button"
       onClick={onClick}
-      className={`flex h-9 min-w-0 items-center justify-center gap-1 rounded-xl border text-[9px] font-bold transition active:scale-[0.97] sm:h-10 sm:gap-1.5 sm:text-xs ${
-        danger
-          ? "border-[#efd3d0] bg-[#fff8f7] text-[#b35a54]"
-          : "border-[#dceacb] bg-white text-[#667065] hover:border-[#315d32] hover:bg-[#eef5e7] hover:text-[#315d32]"
-      }`}
+      className={`flex h-9 min-w-0 items-center justify-center gap-1 rounded-xl border text-[9px] font-bold transition active:scale-[0.97] sm:h-10 sm:gap-1.5 sm:text-xs ${danger
+        ? "border-[#efd3d0] bg-[#fff8f7] text-[#b35a54]"
+        : "border-[#dceacb] bg-white text-[#667065] hover:border-[#315d32] hover:bg-[#eef5e7] hover:text-[#315d32]"
+        }`}
     >
       <Icon className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
       <span className="truncate">{label}</span>
@@ -1494,8 +1651,8 @@ function ModalButton({
   const style = primary
     ? "bg-[#315d32] text-white shadow-[0_8px_20px_rgba(49,93,50,0.2)] hover:bg-[#274d29]"
     : danger
-    ? "bg-[#b35a54] text-white shadow-[0_8px_20px_rgba(179,90,84,0.2)] hover:bg-[#9c4b46]"
-    : "border border-[#dceacb] text-[#667065] hover:border-[#315d32] hover:bg-[#f7f8f2]";
+      ? "bg-[#b35a54] text-white shadow-[0_8px_20px_rgba(179,90,84,0.2)] hover:bg-[#9c4b46]"
+      : "border border-[#dceacb] text-[#667065] hover:border-[#315d32] hover:bg-[#f7f8f2]";
 
   return (
     <motion.button

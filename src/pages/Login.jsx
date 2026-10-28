@@ -467,9 +467,9 @@ export default function Login() {
                         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#92998e] transition hover:bg-[#eef5e7] hover:text-[#315d32] disabled:opacity-50"
                       >
                         {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
                           <Eye className="h-4 w-4" />
+                        ) : (
+                          <EyeOff className="h-4 w-4" />
                         )}
                       </button>
                     </div>
