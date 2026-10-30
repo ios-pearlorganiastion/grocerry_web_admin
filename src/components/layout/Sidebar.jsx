@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -13,7 +14,9 @@ import {
   Store,
   Sparkles,
   ChevronRight,
+  ChevronDown,
   HandCoins,
+  Percent,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -25,7 +28,15 @@ const NAV_ITEMS = [
   { label: "Brands", icon: BookMarked, path: "/brand" },
   { label: "Customers", icon: Users, path: "/customers" },
   { label: "Staff", icon: UsersRound, path: "/staff" },
-  { label: "Affiliates", icon: HandCoins, path: "/affiliates" },
+  {
+    label: "Affiliates",
+    icon: HandCoins,
+    path: "/affiliates",
+    children: [
+      { label: "All Affiliates", icon: Users, path: "/affiliates", end: true },
+      { label: "Commission", icon: Percent, path: "/affiliates/commission" },
+    ],
+  },
 ];
 
 const sidebarVariants = {
@@ -65,6 +76,15 @@ export default function Sidebar({
   onLogout,
 }) {
   const closeOnMobile = () => setMobileOpen(false);
+
+  const location = useLocation();
+  const [openGroups, setOpenGroups] = useState({});
+
+  const isGroupOpen = (item) =>
+    openGroups[item.path] ?? location.pathname.startsWith(item.path);
+
+  const toggleGroup = (item) =>
+    setOpenGroups((prev) => ({ ...prev, [item.path]: !isGroupOpen(item) }));
 
   const initials =
     staffName
@@ -252,6 +272,142 @@ export default function Sidebar({
           >
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
+
+              if (item.children) {
+                const open = isGroupOpen(item);
+                const groupActive = location.pathname.startsWith(item.path);
+
+                return (
+                  <motion.div key={item.path} variants={itemVariants}>
+                    {/* Parent button */}
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(item)}
+                      className={`
+                        group relative flex min-h-[44px] w-full items-center gap-3
+                        overflow-hidden rounded-xl px-3
+                        transition-all duration-200
+                        ${
+                          groupActive
+                            ? "bg-[#315d32] text-white shadow-[0_8px_22px_rgba(49,93,50,0.18)]"
+                            : "text-[#667065] hover:bg-[#eef5e7] hover:text-[#315d32]"
+                        }
+                      `}
+                    >
+                      {groupActive && (
+                        <>
+                          <motion.span
+                            layoutId="activeSidebarBar"
+                            className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[#b8df7d]"
+                          />
+
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="absolute -right-8 -top-8 h-20 w-20 rounded-full bg-[#b8df7d]/10 blur-xl"
+                          />
+                        </>
+                      )}
+
+                      <motion.div
+                        whileHover={{
+                          scale: 1.06,
+                          rotate: groupActive ? 2 : 3,
+                        }}
+                        className={`
+                          relative flex h-8 w-8 shrink-0 items-center
+                          justify-center rounded-lg transition-all duration-200
+                          ${
+                            groupActive
+                              ? "bg-white/10 text-white"
+                              : "text-[#92998e] group-hover:bg-white group-hover:text-[#315d32] group-hover:shadow-sm"
+                          }
+                        `}
+                      >
+                        <Icon
+                          className="h-[17px] w-[17px]"
+                          strokeWidth={groupActive ? 2.3 : 2}
+                        />
+                      </motion.div>
+
+                      <span
+                        className={`
+                          relative flex-1 text-left text-[12px] font-bold
+                          ${groupActive ? "text-white" : "text-inherit"}
+                        `}
+                      >
+                        {item.label}
+                      </span>
+
+                      <motion.div
+                        animate={{ rotate: open ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="relative flex h-5 w-5 items-center justify-center"
+                      >
+                        <ChevronDown
+                          className="h-3.5 w-3.5"
+                          strokeWidth={2.5}
+                        />
+                      </motion.div>
+                    </button>
+
+                    {/* Sub-items */}
+                    <AnimatePresence initial={false}>
+                      {open && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25, ease: "easeInOut" }}
+                          className="overflow-hidden"
+                        >
+                          <div className="ml-[22px] mt-1 space-y-1 border-l-2 border-[#dceacb] pl-3">
+                            {item.children.map((child) => {
+                              const ChildIcon = child.icon;
+
+                              return (
+                                <NavLink
+                                  key={child.path}
+                                  to={child.path}
+                                  end={child.end}
+                                  onClick={closeOnMobile}
+                                  className={({ isActive }) => `
+                                    flex min-h-[38px] items-center gap-2.5
+                                    rounded-lg px-2.5 text-[11.5px] font-bold
+                                    transition-all duration-200
+                                    ${
+                                      isActive
+                                        ? "bg-[#eef5e7] text-[#315d32]"
+                                        : "text-[#667065] hover:bg-[#f4f8ef] hover:text-[#315d32]"
+                                    }
+                                  `}
+                                >
+                                  {({ isActive }) => (
+                                    <>
+                                      <ChildIcon
+                                        className="h-[15px] w-[15px]"
+                                        strokeWidth={isActive ? 2.3 : 2}
+                                      />
+
+                                      <span className="flex-1">
+                                        {child.label}
+                                      </span>
+
+                                      {isActive && (
+                                        <span className="h-1.5 w-1.5 rounded-full bg-[#315d32]" />
+                                      )}
+                                    </>
+                                  )}
+                                </NavLink>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              }
 
               return (
                 <motion.div

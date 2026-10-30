@@ -10,7 +10,7 @@ import Customers from "./pages/Customers";
 import Staff from "./pages/Staff";
 import Settings from "./pages/Settings";
 import Affiliates from "./pages/Affiliates";
-
+import AffiliateCommission from "./pages/AffiliateCommission";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/layout/AppLayout";
 
@@ -30,6 +30,7 @@ function App() {
             <Route path="/customers" element={<Customers />} />
             <Route path="/staff" element={<Staff />} />
             <Route path="/affiliates" element={<Affiliates />} />
+            <Route path="/affiliates/commission" element={<AffiliateCommission />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>
