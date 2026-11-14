@@ -23,7 +23,13 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Card } from "../components/ui/Card";
 import { getAffiliateStats } from "../api/affiliateApis";
-
+const getCurrentDateLabel = () =>
+  new Date().toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+// Output: "14 Nov 2026"
 const dashboardData = {
   stats: [
     {
@@ -255,7 +261,33 @@ const cardHover = {
 
 export default function Dashboard() {
   const [period, setPeriod] = useState("Last 30 days");
-  const [month] = useState("September 2026");
+  const [month, setMonth] = useState(getCurrentDateLabel());
+
+  useEffect(() => {
+    const updateDate = () => setMonth(getCurrentDateLabel());
+
+    // Midnight tak ka time nikalo, tab date refresh karo
+    const now = new Date();
+    const nextMidnight = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1
+    );
+    const timeout = setTimeout(() => {
+      updateDate();
+    }, nextMidnight - now);
+
+    // Tab me wapas aane par bhi refresh (agar dashboard raat bhar khula raha)
+    const onVisible = () => {
+      if (document.visibilityState === "visible") updateDate();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      clearTimeout(timeout);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [month]);
   const [refreshing, setRefreshing] = useState(false);
   const [affiliateStats, setAffiliateStats] = useState(null);
 
@@ -436,9 +468,8 @@ export default function Dashboard() {
                 className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 text-[10px] font-bold text-white backdrop-blur-xl transition-all duration-300 hover:border-white/25 hover:bg-white/15 hover:shadow-lg sm:text-xs"
               >
                 <RefreshCw
-                  className={`h-4 w-4 ${
-                    refreshing ? "animate-spin" : ""
-                  }`}
+                  className={`h-4 w-4 ${refreshing ? "animate-spin" : ""
+                    }`}
                 />
                 Refresh
               </motion.button>
@@ -539,11 +570,10 @@ export default function Dashboard() {
 
                     <div className="mt-2.5 flex min-w-0 items-center gap-1.5 sm:mt-5 sm:gap-2">
                       <span
-                        className={`inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-1 text-[7px] font-black min-[390px]:px-2 min-[390px]:text-[8px] sm:text-[9px] ${
-                          positive
+                        className={`inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-1 text-[7px] font-black min-[390px]:px-2 min-[390px]:text-[8px] sm:text-[9px] ${positive
                             ? "bg-[#eef5e7] text-[#315d32]"
                             : "bg-[#f8ecea] text-[#b35a54]"
-                        }`}
+                          }`}
                       >
                         {positive ? (
                           <ArrowUpRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
@@ -791,11 +821,10 @@ export default function Dashboard() {
                             whileHover={{
                               scaleY: 1.04,
                             }}
-                            className={`w-full origin-bottom rounded-t-[3px] transition-colors sm:rounded-t-[5px] ${
-                              index === dashboardData.sales.length - 1
+                            className={`w-full origin-bottom rounded-t-[3px] transition-colors sm:rounded-t-[5px] ${index === dashboardData.sales.length - 1
                                 ? "bg-[#315d32]"
                                 : "bg-[#dceacb] group-hover/bar:bg-[#b8df7d]"
-                            }`}
+                              }`}
                           />
 
                           <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#315d32] px-2 py-1 text-[8px] font-bold text-white shadow-lg group-hover/bar:block">
@@ -955,9 +984,8 @@ export default function Dashboard() {
                       ].map((heading, index) => (
                         <th
                           key={heading}
-                          className={`px-5 py-3 text-left text-[9px] font-bold uppercase tracking-wider text-[#92998e] ${
-                            index === 4 ? "text-right" : ""
-                          }`}
+                          className={`px-5 py-3 text-left text-[9px] font-bold uppercase tracking-wider text-[#92998e] ${index === 4 ? "text-right" : ""
+                            }`}
                         >
                           {heading}
                         </th>
@@ -1590,9 +1618,8 @@ function OrderStatusChart() {
                 stroke={item.color}
                 strokeWidth="12"
                 strokeLinecap="round"
-                strokeDasharray={`${length} ${
-                  circumference - length
-                }`}
+                strokeDasharray={`${length} ${circumference - length
+                  }`}
                 strokeDashoffset={-currentOffset}
                 initial={{
                   opacity: 0,

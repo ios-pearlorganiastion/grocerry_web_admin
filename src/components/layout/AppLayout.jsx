@@ -3,7 +3,6 @@ import { useNavigate, Outlet } from "react-router-dom";
 import {
   Menu,
   Search,
-  Bell,
   ChevronDown,
   Sparkles,
   Activity,
@@ -11,6 +10,7 @@ import {
 import { motion } from "framer-motion";
 import Sidebar from "./Sidebar";
 import { getSession, clearSession } from "../../utils/auth";
+import LogoutConfirmModal from "./LogoutConfirmModal";
 
 export default function AppLayout() {
   const navigate = useNavigate();
@@ -18,6 +18,7 @@ export default function AppLayout() {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
 
   const staffName = session?.staff?.name || "Rahul Sharma";
   const staffEmail =
@@ -34,12 +35,27 @@ export default function AppLayout() {
       .toUpperCase() || "RS";
 
   const handleLogout = () => {
+    setLogoutModalOpen(true);
+  };
+
+  const confirmLogout = () => {
     clearSession();
     navigate("/login", { replace: true });
   };
 
+  const cancelLogout = () => {
+    setLogoutModalOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-[#f7faf8] text-[#202a20]">
+      {logoutModalOpen && (
+        <LogoutConfirmModal
+          onCancel={cancelLogout}
+          onConfirm={confirmLogout}
+        />
+      )}
+
       <Sidebar
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
@@ -77,17 +93,7 @@ export default function AppLayout() {
               </h1>
             </div>
 
-            <div className="relative ml-auto hidden w-full max-w-[370px] lg:block">
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-[16px] w-[16px] -translate-y-1/2 text-[#92998e]" />
-
-              <input
-                type="text"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                placeholder="Search orders, products..."
-                className="h-10 w-full rounded-xl border border-[#dfe8e1] bg-[#f8faf8] pl-10 pr-4 text-[11px] font-medium text-[#202a20] outline-none transition-all duration-200 placeholder:text-[#92998e] hover:border-[#cfded3] focus:border-[#315d32] focus:bg-white focus:ring-4 focus:ring-[#315d32]/5"
-              />
-            </div>
+            <div className="flex-1" />
 
             <motion.button
               whileHover={{
@@ -97,35 +103,10 @@ export default function AppLayout() {
                 scale: 0.94,
               }}
               aria-label="Search"
-              className="group flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#dfe9e2] bg-white text-[#667065] shadow-sm transition-all duration-200 hover:border-[#b8df7d] hover:bg-[#eef5e7] hover:text-[#315d32] hover:shadow-md md:hidden"
+              className="group flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ... md:hidden"
             >
               <Search className="h-[17px] w-[17px]" />
             </motion.button>
-
-            <motion.button
-              whileHover={{
-                scale: 1.04,
-              }}
-              whileTap={{
-                scale: 0.94,
-              }}
-              aria-label="Notifications"
-              className="group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#dfe9e2] bg-white text-[#667065] shadow-sm transition-all duration-200 hover:border-[#b8df7d] hover:bg-[#eef5e7] hover:text-[#315d32] hover:shadow-md"
-            >
-              <Bell className="h-[17px] w-[17px] transition-transform duration-200 group-hover:scale-110" />
-
-              <motion.span
-                animate={{
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                }}
-                className="absolute right-[8px] top-[7px] h-1.5 w-1.5 rounded-full border border-white bg-emerald-500"
-              />
-            </motion.button>
-
             <div className="hidden h-8 w-px bg-[#e5ece7] sm:block" />
 
             <motion.div

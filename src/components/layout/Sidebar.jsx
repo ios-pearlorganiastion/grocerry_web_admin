@@ -71,8 +71,6 @@ export default function Sidebar({
   mobileOpen,
   setMobileOpen,
   storeName,
-  staffName,
-  staffEmail,
   onLogout,
 }) {
   const closeOnMobile = () => setMobileOpen(false);
@@ -85,14 +83,6 @@ export default function Sidebar({
 
   const toggleGroup = (item) =>
     setOpenGroups((prev) => ({ ...prev, [item.path]: !isGroupOpen(item) }));
-
-  const initials =
-    staffName
-      ?.split(" ")
-      .map((word) => word?.[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() || "AD";
 
   return (
     <>
@@ -120,10 +110,9 @@ export default function Sidebar({
           bg-[#fdfefd]
           shadow-[10px_0_40px_rgba(49,93,50,0.07)]
           transition-transform duration-300 ease-in-out
-          ${
-            mobileOpen
-              ? "translate-x-0"
-              : "-translate-x-full lg:translate-x-0"
+          ${mobileOpen
+            ? "translate-x-0"
+            : "-translate-x-full lg:translate-x-0"
           }
         `}
       >
@@ -174,14 +163,14 @@ export default function Sidebar({
             </motion.div>
 
             <div className="min-w-0">
-              <h1 className="truncate text-[13px] font-black tracking-tight text-[#202a20]">
+              <h1 className="truncate text-[14px] font-black tracking-tight text-[#202a20]">
                 CD Shopping Hub
               </h1>
 
               <div className="mt-0.5 flex items-center gap-1">
                 <Sparkles className="h-2.5 w-2.5 text-[#315d32]" />
 
-                <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[#315d32]">
+                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#315d32]">
                   Customer
                 </p>
               </div>
@@ -233,7 +222,7 @@ export default function Sidebar({
             </motion.div>
 
             <div className="min-w-0">
-              <p className="text-[8px] font-black uppercase tracking-wider text-[#315d32]">
+              <p className="text-[11px] font-black uppercase tracking-wider text-[#315d32]">
                 Store status
               </p>
 
@@ -250,7 +239,7 @@ export default function Sidebar({
                   className="h-1.5 w-1.5 rounded-full bg-emerald-500"
                 />
 
-                <span className="text-[9px] font-bold text-[#667065]">
+                <span className="text-[12px] font-bold text-[#667065]">
                   Store is active
                 </span>
               </div>
@@ -287,10 +276,9 @@ export default function Sidebar({
                         group relative flex min-h-[44px] w-full items-center gap-3
                         overflow-hidden rounded-xl px-3
                         transition-all duration-200
-                        ${
-                          groupActive
-                            ? "bg-[#315d32] text-white shadow-[0_8px_22px_rgba(49,93,50,0.18)]"
-                            : "text-[#667065] hover:bg-[#eef5e7] hover:text-[#315d32]"
+                        ${groupActive
+                          ? "bg-[#315d32] text-white shadow-[0_8px_22px_rgba(49,93,50,0.18)]"
+                          : "text-[#667065] hover:bg-[#eef5e7] hover:text-[#315d32]"
                         }
                       `}
                     >
@@ -317,10 +305,9 @@ export default function Sidebar({
                         className={`
                           relative flex h-8 w-8 shrink-0 items-center
                           justify-center rounded-lg transition-all duration-200
-                          ${
-                            groupActive
-                              ? "bg-white/10 text-white"
-                              : "text-[#92998e] group-hover:bg-white group-hover:text-[#315d32] group-hover:shadow-sm"
+                          ${groupActive
+                            ? "bg-white/10 text-white"
+                            : "text-[#92998e] group-hover:bg-white group-hover:text-[#315d32] group-hover:shadow-sm"
                           }
                         `}
                       >
@@ -332,7 +319,7 @@ export default function Sidebar({
 
                       <span
                         className={`
-                          relative flex-1 text-left text-[12px] font-bold
+                      relative flex-1 text-left text-[14.5px] font-bold
                           ${groupActive ? "text-white" : "text-inherit"}
                         `}
                       >
@@ -373,12 +360,11 @@ export default function Sidebar({
                                   onClick={closeOnMobile}
                                   className={({ isActive }) => `
                                     flex min-h-[38px] items-center gap-2.5
-                                    rounded-lg px-2.5 text-[11.5px] font-bold
+                                    rounded-lg px-2.5 text-[14.5px] font-bold
                                     transition-all duration-200
-                                    ${
-                                      isActive
-                                        ? "bg-[#eef5e7] text-[#315d32]"
-                                        : "text-[#667065] hover:bg-[#f4f8ef] hover:text-[#315d32]"
+                                    ${isActive
+                                      ? "bg-[#eef5e7] text-[#315d32]"
+                                      : "text-[#667065] hover:bg-[#f4f8ef] hover:text-[#315d32]"
                                     }
                                   `}
                                 >
@@ -421,10 +407,9 @@ export default function Sidebar({
                       group relative flex min-h-[44px] items-center gap-3
                       overflow-hidden rounded-xl px-3
                       transition-all duration-200
-                      ${
-                        isActive
-                          ? "bg-[#315d32] text-white shadow-[0_8px_22px_rgba(49,93,50,0.18)]"
-                          : "text-[#667065] hover:bg-[#eef5e7] hover:text-[#315d32]"
+                      ${isActive
+                        ? "bg-[#315d32] text-white shadow-[0_8px_22px_rgba(49,93,50,0.18)]"
+                        : "text-[#667065] hover:bg-[#eef5e7] hover:text-[#315d32]"
                       }
                     `}
                   >
@@ -453,10 +438,9 @@ export default function Sidebar({
                           className={`
                             relative flex h-8 w-8 shrink-0 items-center
                             justify-center rounded-lg transition-all duration-200
-                            ${
-                              isActive
-                                ? "bg-white/10 text-white"
-                                : "text-[#92998e] group-hover:bg-white group-hover:text-[#315d32] group-hover:shadow-sm"
+                            ${isActive
+                              ? "bg-white/10 text-white"
+                              : "text-[#92998e] group-hover:bg-white group-hover:text-[#315d32] group-hover:shadow-sm"
                             }
                           `}
                         >
@@ -468,7 +452,7 @@ export default function Sidebar({
 
                         <span
                           className={`
-                            relative flex-1 text-[12px] font-bold
+                            relative flex-1 text-[14px] font-bold
                             ${isActive ? "text-white" : "text-inherit"}
                           `}
                         >
@@ -514,10 +498,9 @@ export default function Sidebar({
             className={({ isActive }) => `
               group relative flex min-h-[42px] items-center gap-3
               overflow-hidden rounded-xl px-3 transition-all duration-200
-              ${
-                isActive
-                  ? "bg-[#315d32] text-white shadow-[0_7px_18px_rgba(49,93,50,0.16)]"
-                  : "text-[#667065] hover:bg-[#eef5e7] hover:text-[#315d32]"
+              ${isActive
+                ? "bg-[#315d32] text-white shadow-[0_7px_18px_rgba(49,93,50,0.16)]"
+                : "text-[#667065] hover:bg-[#eef5e7] hover:text-[#315d32]"
               }
             `}
           >
@@ -534,17 +517,16 @@ export default function Sidebar({
                   className={`
                     flex h-8 w-8 shrink-0 items-center justify-center rounded-lg
                     transition-all
-                    ${
-                      isActive
-                        ? "bg-white/10 text-white"
-                        : "text-[#92998e] group-hover:bg-white group-hover:text-[#315d32]"
+                    ${isActive
+                      ? "bg-white/10 text-white"
+                      : "text-[#92998e] group-hover:bg-white group-hover:text-[#315d32]"
                     }
                   `}
                 >
                   <Settings className="h-[17px] w-[17px]" />
                 </div>
 
-                <span className="flex-1 text-[12px] font-bold">
+                <span className="flex-1 text-[14px] font-bold">
                   Settings
                 </span>
 
@@ -558,60 +540,21 @@ export default function Sidebar({
             )}
           </NavLink>
 
-          <motion.div
-            whileHover={{
-              y: -2,
-            }}
-            className="mt-2 flex items-center gap-2.5 rounded-xl border border-[#dceacb] bg-white p-2 shadow-[0_5px_18px_rgba(49,93,50,0.04)]"
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={onLogout}
+            title="Log out"
+            className="group mt-0.5 flex min-h-[42px] w-full items-center gap-3 rounded-xl px-3 text-[#667065] transition-all duration-200 hover:bg-[#f8ecea] hover:text-[#b35a54]"
           >
-            <div className="relative shrink-0">
-              <motion.div
-                whileHover={{
-                  scale: 1.07,
-                  rotate: 3,
-                }}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#315d32] text-[10px] font-black text-white shadow-[0_6px_15px_rgba(49,93,50,0.16)]"
-              >
-                {initials}
-              </motion.div>
-
-              <motion.span
-                animate={{
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                }}
-                className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500"
-              />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#92998e] transition-all group-hover:bg-white group-hover:text-[#b35a54]">
+              <LogOut className="h-[17px] w-[17px]" />
             </div>
 
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[11px] font-black text-[#202a20]">
-                {staffName}
-              </p>
-
-              <p className="mt-0.5 truncate text-[8px] font-medium text-[#92998e]">
-                {staffEmail}
-              </p>
-            </div>
-
-            <motion.button
-              whileHover={{
-                scale: 1.08,
-                rotate: -4,
-              }}
-              whileTap={{
-                scale: 0.9,
-              }}
-              onClick={onLogout}
-              title="Log out"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#92998e] transition-all hover:bg-[#f8ecea] hover:text-[#b35a54]"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-            </motion.button>
-          </motion.div>
+            <span className="flex-1 text-left text-[14px] font-bold text-red-500">
+              Logout
+            </span>
+          </motion.button>
         </motion.div>
       </motion.aside>
     </>
