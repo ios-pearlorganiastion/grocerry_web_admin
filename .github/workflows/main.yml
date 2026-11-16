@@ -1,0 +1,50 @@
+# Use in BOTH React repos (grocerry_web_admin and CD-Shopping-Hub)
+# Save as: .github/workflows/deploy.yml
+#
+# Per repo, set:
+#   Secrets:   SSH_HOST, SSH_USER, SSH_KEY
+#   Variables: DEPLOY_PATH  -> /var/www/html/admin  (admin repo)
+#                              /var/www/html/shop   (CD-Shopping-Hub repo)
+#              VITE_API_URL -> https://api.example.com   (rename if your code uses another env name)
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+
+      - name: Detect output folder (Vite = dist, CRA = build)
+        id: out
+        run: echo "dir=$([ -d dist ] && echo dist || echo build)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload to server
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -az --delete
+          path: ${{ steps.out.outputs.dir }}/
+          remote_path: ${{ vars.DEPLOY_PATH }}/
+          remote_host: ${{ secrets.SSH_HOST }}
+          remote_user: ${{ secrets.SSH_USER }}
+          remote_key: ${{ secrets.SSH_KEY }}
