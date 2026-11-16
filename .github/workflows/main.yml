@@ -1,4 +1,7 @@
-name: Deploy Frontend
+# Repo: grocerry_web_admin (staff panel -> https://staff.cdshoppinghub.com)
+# Save as: .github/workflows/deploy.yml
+# Only ONE secret needed: SSH_KEY (contents of deploy_key). Everything else is hardcoded below.
+name: Deploy Staff Panel
 
 on:
   push:
@@ -6,80 +9,41 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: deploy-frontend
+  group: deploy-staff
   cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-
-      # ---- DEBUG: verify secrets/vars before doing any work ----
-      - name: Verify secrets and variables
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
-        run: |
-          fail=0
-          for name in SSH_HOST SSH_USER SSH_KEY DEPLOY_PATH; do
-            if [ -z "${!name}" ]; then
-              echo "::error::$name is EMPTY (check name, repo vs environment scope, secret vs variable)"
-              fail=1
-            else
-              echo "$name is set (length ${#name}/value hidden)"
-            fi
-          done
-
-          # Format checks on host (no value printed)
-          case "$SSH_HOST" in
-            *://*)      echo "::error::SSH_HOST contains a URL scheme (remove ssh:// or http://)"; fail=1 ;;
-            *@*)        echo "::error::SSH_HOST contains user@ (put the user in SSH_USER)"; fail=1 ;;
-            *:*)        echo "::error::SSH_HOST contains a port (use remote_port instead)"; fail=1 ;;
-            *[[:space:]]*) echo "::error::SSH_HOST contains whitespace/newline (re-save the secret)"; fail=1 ;;
-          esac
-
-          # DNS resolution test; prints only pass/fail
-          if [ -n "$SSH_HOST" ]; then
-            if getent hosts "$SSH_HOST" > /dev/null; then
-              echo "DNS: SSH_HOST resolves OK"
-            else
-              echo "::error::DNS: SSH_HOST does NOT resolve from GitHub runners (private/LAN name? typo?)"
-              fail=1
-            fi
-          fi
-
-          exit $fail
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - run: npm ci
+      - run: npm ci --no-audit --no-fund
 
       - name: Build
         run: npm run build
         env:
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_API_URL: https://api.cdshoppinghub.com
 
       - name: Detect output folder (Vite = dist, CRA = build)
         id: out
         run: |
-          dir=$([ -d dist ] && echo dist || echo build)
-          echo "dir=$dir" >> "$GITHUB_OUTPUT"
-          echo "Output folder: $dir"
-          ls "$dir" | head
+          DIR=$([ -d dist ] && echo dist || echo build)
+          test -f "$DIR/index.html" || { echo "No index.html in $DIR"; exit 1; }
+          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
 
       - name: Upload to server
         uses: burnett01/rsync-deployments@7.0.1
         with:
-          switches: -avz --delete
+          switches: -rlptz --delete
           path: ${{ steps.out.outputs.dir }}/
-          remote_path: ${{ vars.DEPLOY_PATH }}/
-          remote_host: ${{ secrets.SSH_HOST }}
-          remote_user: ${{ secrets.SSH_USER }}
+          remote_path: /var/www/html/admin/
+          remote_host: 189.72.152.118
+          remote_user: root
           remote_key: ${{ secrets.SSH_KEY }}
-          # remote_port: 22   # uncomment if your server uses a non-default port
