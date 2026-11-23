@@ -20,11 +20,18 @@ export default function AppLayout() {
   const [searchValue, setSearchValue] = useState("");
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
 
-  const staffName = session?.staff?.name || "Rahul Sharma";
+  const staffName =
+    session?.staff?.displayName ||
+    session?.staff?.name ||
+    session?.staff?.username ||
+    "Super Admin";
   const staffEmail =
-    session?.staff?.email || "rahul@greenbasket.com";
+    session?.staff?.email ||
+    (session?.staff?.username
+      ? `${session.staff.username}@cdshoppinghub.com`
+      : "admin@cdshoppinghub.com");
 
-  const firstName = staffName?.split(" ")[0] || "Rahul";
+  const firstName = staffName?.split(" ")[0] || "Admin";
 
   const initials =
     staffName
@@ -32,7 +39,7 @@ export default function AppLayout() {
       .map((word) => word?.[0])
       .join("")
       .slice(0, 2)
-      .toUpperCase() || "RS";
+      .toUpperCase() || "SA";
 
   const handleLogout = () => {
     setLogoutModalOpen(true);
@@ -59,7 +66,7 @@ export default function AppLayout() {
       <Sidebar
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
-        storeName="Green Basket Store"
+        storeName="CD Shopping Hub"
         staffName={staffName}
         staffEmail={staffEmail}
         onLogout={handleLogout}

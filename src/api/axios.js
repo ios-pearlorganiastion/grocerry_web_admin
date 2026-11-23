@@ -1,11 +1,15 @@
 
 import axios from "axios";
 
+const getBaseURL = () => {
+  if (import.meta.env?.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  return "https://api.cdshoppinghub.com";
+};
+
 const api = axios.create({
-  
-  // baseURL: "https://api.cdshoppinghub.com",
-  
- baseURL: "https://79m1j1qk-3001.inc1.devtunnels.ms",
+  baseURL: getBaseURL(),
   headers: {
     "Content-Type": "application/json",
   },

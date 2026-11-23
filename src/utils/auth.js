@@ -24,6 +24,10 @@ export const getSession = () => {
 
 export const clearSession = () => {
   localStorage.removeItem(AUTH_STORAGE_KEY);
+  localStorage.removeItem("staffToken");
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("token");
 };
 
 export const isAuthenticated = () => {

@@ -2,6 +2,7 @@ export * from "./authApis";
 export * from "./staffApis";
 export * from "./categoriesApis";
 export * from "./brandApis";
+export * from "./subcategoryApis";
 export * from "./productApis";
 export * from "./order.api";
 export * from "./inventoryApis";
