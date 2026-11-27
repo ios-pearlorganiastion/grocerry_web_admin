@@ -10,7 +10,7 @@ const getBaseURL = () => {
     if (hostname.includes("cdshoppinghub.com")) {
       return `${window.location.protocol}//api.cdshoppinghub.com`;
     }
-    return window.location.origin;
+    return "https://api.cdshoppinghub.com";
   }
   return "https://api.cdshoppinghub.com";
 };
@@ -31,7 +31,7 @@ api.interceptors.request.use(
         localStorage.getItem("staffSession") || "null"
       );
       token = session?.accessToken;
-    } catch {}
+    } catch { }
 
     if (!token) {
       token =

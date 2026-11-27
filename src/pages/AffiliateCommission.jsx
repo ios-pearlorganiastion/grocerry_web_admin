@@ -637,7 +637,7 @@ export default function AffiliateCommission() {
                     colSpan={TABLE_HEADS.length}
                     className="px-4 py-12 text-center text-[12px] font-bold text-[#92998e]"
                   >
-                    Koi affiliate nahi mila
+                    No Affiliates found
                   </td>
                 </tr>
               )}
