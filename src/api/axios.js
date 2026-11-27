@@ -1,11 +1,22 @@
 
 import axios from "axios";
 
+const getBaseURL = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  if (typeof window !== "undefined" && window.location) {
+    const hostname = window.location.hostname;
+    if (hostname.includes("cdshoppinghub.com")) {
+      return `${window.location.protocol}//api.cdshoppinghub.com`;
+    }
+    return window.location.origin;
+  }
+  return "https://api.cdshoppinghub.com";
+};
+
 const api = axios.create({
-  
-   baseURL: "https://api.cdshoppinghub.com",
-  
-//  baseURL: "https://79m1j1qk-3001.inc1.devtunnels.ms",
+  baseURL: getBaseURL(),
   headers: {
     "Content-Type": "application/json",
   },

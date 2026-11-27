@@ -1,0 +1,49 @@
+# Repo: grocerry_web_admin (staff panel -> https://staff.cdshoppinghub.com)
+# Save as: .github/workflows/deploy.yml
+# Only ONE secret needed: SSH_KEY (contents of deploy_key). Everything else is hardcoded below.
+name: Deploy Staff Panel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staff
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: https://api.cdshoppinghub.com
+
+      - name: Detect output folder (Vite = dist, CRA = build)
+        id: out
+        run: |
+          DIR=$([ -d dist ] && echo dist || echo build)
+          test -f "$DIR/index.html" || { echo "No index.html in $DIR"; exit 1; }
+          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Upload to server
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -rlptz --delete
+          path: ${{ steps.out.outputs.dir }}/
+          remote_path: /var/www/html/admin/
+          remote_host: 189.72.152.118
+          remote_user: root
+          remote_key: ${{ secrets.SSH_KEY }}

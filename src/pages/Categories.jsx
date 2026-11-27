@@ -12,6 +12,7 @@ import {
   XCircle,
   RefreshCw,
   Layers3,
+  FolderTree,
   Tag,
   ChevronRight,
   X,
@@ -1013,6 +1014,17 @@ function CategoryCard({
               <p className="mt-1.5 line-clamp-2 max-w-2xl text-[10px] leading-4 text-[#92998e] sm:text-xs sm:leading-5">
                 {category.description || "No description available"}
               </p>
+
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1 rounded-full border border-[#dceacb] bg-[#eef5e7] px-2 py-0.5 text-[9px] font-bold text-[#315d32] sm:text-[10px]">
+                  <FolderTree className="h-3 w-3" />
+                  {category.subcategories?.length ?? category._count?.subcategories ?? 0} subcategories
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full border border-[#dceacb] bg-[#f7f8f2] px-2 py-0.5 text-[9px] font-bold text-[#667065] sm:text-[10px]">
+                  <Layers3 className="h-3 w-3 text-[#92998e]" />
+                  {category._count?.products ?? 0} products
+                </span>
+              </div>
             </div>
           </div>
 

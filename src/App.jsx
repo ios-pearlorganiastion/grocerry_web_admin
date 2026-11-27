@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import Orders from "./pages/Orders";
 import Products from "./pages/Products";
 import Categories from "./pages/Categories";
+import Subcategories from "./pages/Subcategories";
 import Brand from "./pages/Brand";
 import Customers from "./pages/Customers";
 import Staff from "./pages/Staff";
@@ -26,6 +27,7 @@ function App() {
             <Route path="/orders" element={<Orders />} />
             <Route path="/products" element={<Products />} />
             <Route path="/categories" element={<Categories />} />
+            <Route path="/subcategories" element={<Subcategories />} />
             <Route path="/brand" element={<Brand />} />
             <Route path="/customers" element={<Customers />} />
             <Route path="/staff" element={<Staff />} />

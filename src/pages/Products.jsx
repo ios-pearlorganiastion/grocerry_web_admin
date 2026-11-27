@@ -40,6 +40,7 @@ import {
   updateProduct,
   bulkImportProducts,
 } from "../api/productApis";
+import { getSubcategories } from "../api/subcategoryApis";
 
 /* =========================================================
    HELPERS
@@ -161,6 +162,8 @@ export default function Products() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [subcategory, setSubcategory] = useState("");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(true);
@@ -198,6 +201,14 @@ export default function Products() {
     }
   };
 
+  const loadSubcategories = async () => {
+    try {
+      setSubcategories(normalizeList(await getSubcategories()));
+    } catch (err) {
+      console.error("Failed to load subcategories:", err);
+    }
+  };
+
   const loadProducts = async () => {
     try {
       setLoading(true);
@@ -208,6 +219,7 @@ export default function Products() {
         limit: PAGE_SIZE,
         search,
         categoryId: category,
+        subcategoryId: subcategory,
       });
 
       const list = normalizeProducts(response);
@@ -262,13 +274,14 @@ export default function Products() {
   useEffect(() => {
     loadCategories();
     loadBrands();
+    loadSubcategories();
   }, []);
 
   useEffect(() => {
     const timer = setTimeout(loadProducts, 400);
 
     return () => clearTimeout(timer);
-  }, [search, category, currentPage]);
+  }, [search, category, subcategory, currentPage]);
 
   useEffect(() => {
     loadInventory(products);
@@ -428,6 +441,17 @@ export default function Products() {
     return (
       brands.find((b) => String(b.id) === String(product.brandId))?.name || ""
     );
+  };
+
+  const subcategoryName = (product) => {
+    if (product.subcategory?.name) return product.subcategory.name;
+    if (product.subcategoryId) {
+      return (
+        subcategories.find((s) => String(s.id) === String(product.subcategoryId))
+          ?.name || ""
+      );
+    }
+    return "";
   };
 
   const productImage = (product) =>
@@ -628,6 +652,7 @@ export default function Products() {
                   whileTap={{ scale: 0.96 }}
                   onClick={() => {
                     setCategory(cat.id);
+                    setSubcategory("");
                     setCurrentPage(1);
                   }}
                   className={`shrink-0 rounded-xl px-3 py-2 text-[8px] font-bold transition-all sm:px-3.5 sm:text-xs ${active
@@ -640,6 +665,34 @@ export default function Products() {
               );
             })}
           </div>
+
+          {category && subcategories.filter((s) => s.categoryId === category).length > 0 && (
+            <div className="flex items-center gap-1.5 overflow-x-auto border-t border-[#edf1e9] bg-[#fbfdf9] p-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-2 sm:p-2.5">
+              <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#92998e] pl-1 pr-1">
+                Subcategories:
+              </span>
+              {[{ id: "", name: "All" }, ...subcategories.filter((s) => s.categoryId === category)].map((sub) => {
+                const active = String(subcategory) === String(sub.id);
+                return (
+                  <motion.button
+                    key={sub.id || "all-sub"}
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => {
+                      setSubcategory(sub.id);
+                      setCurrentPage(1);
+                    }}
+                    className={`shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-bold transition-all sm:text-xs ${
+                      active
+                        ? "bg-[#315d32] text-white shadow-sm"
+                        : "border border-[#dceacb] bg-white text-[#667065] hover:bg-[#eef5e7] hover:text-[#315d32]"
+                    }`}
+                  >
+                    {sub.name}
+                  </motion.button>
+                );
+              })}
+            </div>
+          )}
         </motion.section>
 
         {/* ERROR */}
@@ -786,6 +839,7 @@ export default function Products() {
                             <p className="mt-1 truncate text-[10px] font-semibold text-[#92998e] sm:text-xs">
                               {brandName(product) && `${brandName(product)} · `}
                               {categoryName(product)}
+                              {subcategoryName(product) && ` › ${subcategoryName(product)}`}
                             </p>
 
                             <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#eef5e7] px-2.5 py-1 text-[8px] font-bold text-[#315d32] sm:text-[10px]">
@@ -1121,6 +1175,7 @@ export default function Products() {
         <ProductModal
           categories={categories}
           brands={brands}
+          subcategories={subcategories}
           product={productModal.mode === "edit" ? productModal.product : null}
           onClose={() => setProductModal(null)}
           onSuccess={handleProductSuccess}
@@ -1233,7 +1288,7 @@ export default function Products() {
    PRODUCT MODAL (add / edit / bulk import)
 ========================================================= */
 
-function ProductModal({ categories = [], brands = [], product, onClose, onSuccess }) {
+function ProductModal({ categories = [], brands = [], subcategories = [], product, onClose, onSuccess }) {
   const isEdit = !!product;
   const fileInputRef = useRef(null);
   const csvInputRef = useRef(null);
@@ -1248,6 +1303,7 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
     description: "",
     brandId: "",
     categoryId: "",
+    subcategoryId: "",
     sku: "",
     weight: "",
     unit: "G",
@@ -1277,6 +1333,7 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
         description: product.description || "",
         brandId: product.brandId || "",
         categoryId: product.categoryId || product.category?.id || "",
+        subcategoryId: product.subcategoryId || product.subcategory?.id || "",
         sku: "",
         weight: "",
         unit: "G",
@@ -1421,6 +1478,7 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
         productFormData.append("description", form.description.trim());
         if (form.brandId) productFormData.append("brandId", form.brandId);
         productFormData.append("categoryId", form.categoryId);
+        if (form.subcategoryId) productFormData.append("subcategoryId", form.subcategoryId);
         productFormData.append("isActive", String(form.isActive));
         appendNewImages(productFormData);
 
@@ -1458,6 +1516,7 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
       formData.append("description", form.description.trim());
       if (form.brandId) formData.append("brandId", form.brandId);
       formData.append("categoryId", form.categoryId);
+      if (form.subcategoryId) formData.append("subcategoryId", form.subcategoryId);
       formData.append(
         "variants",
         JSON.stringify([
@@ -1755,20 +1814,46 @@ function ProductModal({ categories = [], brands = [], product, onClose, onSucces
               </FormField>
             </div>
 
-            <FormField label="Category" required>
-              <Select
-                required
-                value={form.categoryId}
-                onChange={(e) => update("categoryId", e.target.value)}
-              >
-                <option value="">Select category</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormField label="Category" required>
+                <Select
+                  required
+                  value={form.categoryId}
+                  onChange={(e) => {
+                    update("categoryId", e.target.value);
+                    update("subcategoryId", "");
+                  }}
+                >
+                  <option value="">Select category</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </Select>
+              </FormField>
+
+              <FormField label="Subcategory (Optional)">
+                <Select
+                  value={form.subcategoryId || ""}
+                  onChange={(e) => update("subcategoryId", e.target.value)}
+                  disabled={!form.categoryId}
+                >
+                  <option value="">
+                    {!form.categoryId
+                      ? "Select category first"
+                      : "None / Select subcategory"}
                   </option>
-                ))}
-              </Select>
-            </FormField>
+                  {subcategories
+                    .filter((sub) => String(sub.categoryId) === String(form.categoryId))
+                    .map((sub) => (
+                      <option key={sub.id} value={sub.id}>
+                        {sub.name}
+                      </option>
+                    ))}
+                </Select>
+              </FormField>
+            </div>
 
             <FormField label="Description">
               <textarea

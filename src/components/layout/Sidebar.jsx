@@ -13,6 +13,7 @@ import {
   X,
   Store,
   Sparkles,
+  FolderTree,
   ChevronRight,
   ChevronDown,
   HandCoins,
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
   { label: "Orders", icon: ShoppingCart, path: "/orders" },
   { label: "Products", icon: Package, path: "/products" },
   { label: "Categories", icon: Tags, path: "/categories" },
+  { label: "Subcategories", icon: FolderTree, path: "/subcategories" },
   { label: "Brands", icon: BookMarked, path: "/brand" },
   { label: "Customers", icon: Users, path: "/customers" },
   { label: "Staff", icon: UsersRound, path: "/staff" },
@@ -171,7 +173,7 @@ export default function Sidebar({
                 <Sparkles className="h-2.5 w-2.5 text-[#315d32]" />
 
                 <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#315d32]">
-                  Customer
+                  Admin Portal
                 </p>
               </div>
             </div>
