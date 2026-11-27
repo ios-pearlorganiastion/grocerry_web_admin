@@ -3,9 +3,9 @@ import axios from "axios";
 
 const api = axios.create({
   
-  // baseURL: "https://api.cdshoppinghub.com",
+   baseURL: "https://api.cdshoppinghub.com",
   
- baseURL: "https://79m1j1qk-3001.inc1.devtunnels.ms",
+//  baseURL: "https://79m1j1qk-3001.inc1.devtunnels.ms",
   headers: {
     "Content-Type": "application/json",
   },
